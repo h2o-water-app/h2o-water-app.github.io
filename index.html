@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H2O WA</title>
+    <title>AquaSave WA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -12,6 +12,7 @@
             font-family: 'Inter', sans-serif;
             background-color: #f0f9ff; /* Light blue background for the area outside the app */
             margin: 0;
+            overscroll-behavior-y: contain; /* Prevents pull-to-refresh on body */
         }
         .app-container {
             max-width: 420px; /* Typical mobile width */
@@ -21,8 +22,10 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
+            position: relative; /* For modals */
+            overflow-x: hidden;
         }
-        .app-header { /* Renamed from .header to avoid conflict if any page has its own .header */
+        .app-header {
             background-color: #0077c2; /* WA Water Corp Blue */
             color: white;
             padding: 16px;
@@ -30,20 +33,32 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* For back button and icons */
         }
         .app-header h1 {
             font-size: 1.5rem;
             font-weight: 600;
             margin: 0;
+            flex-grow: 1; /* Allow title to take space */
+            text-align: center; /* Center title */
         }
-        .app-header .back-button { /* For sub-page headers */
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 1.2rem;
+        .app-header .header-icon, .app-header .back-button {
+            font-size: 1.3rem;
             color: white;
+            cursor: pointer;
+            padding: 5px;
         }
+        .app-header .back-button {
+            position: absolute; /* Keep back button on left */
+            left: 16px;
+        }
+        .app-header .header-icon-right {
+            position: absolute;
+            right: 16px;
+        }
+
 
         main {
             flex-grow: 1;
@@ -61,7 +76,7 @@
         .nav-bar {
             display: flex;
             justify-content: space-around;
-            padding: 12px 0;
+            padding: 8px 0; /* Reduced padding */
             border-top: 1px solid #e5e7eb;
             background-color: #f9fafb;
             position: sticky;
@@ -74,17 +89,18 @@
             flex-direction: column;
             align-items: center;
             color: #6b7280;
-            font-size: 0.75rem;
+            font-size: 0.7rem; /* Smaller font */
             cursor: pointer;
-            flex: 1; /* Equal width */
+            flex: 1; 
             text-align: center;
+            padding: 4px 0; /* Reduced padding */
         }
         .nav-item.active {
             color: #0077c2;
         }
         .nav-item i {
-            font-size: 1.5rem;
-            margin-bottom: 4px;
+            font-size: 1.3rem; /* Smaller icon */
+            margin-bottom: 2px; /* Reduced margin */
         }
         .card {
             background-color: white;
@@ -93,7 +109,6 @@
             margin: 16px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
-        /* Progress Bar Styles (from Obj 1) */
         .progress-bar-bg {
             background-color: #e0e0e0;
             border-radius: 8px;
@@ -101,15 +116,15 @@
             overflow: hidden;
         }
         .progress-bar {
-            background-color: #4caf50; /* Green for good progress - default */
+            background-color: #4caf50; 
             height: 100%;
             border-radius: 8px;
             transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
         }
-        .progress-bar.yellow { background-color: #ffeb3b; } /* Yellow for moderate */
-        .progress-bar.red { background-color: #f44336; } /* Red for high usage/warning */
+        .progress-bar.yellow { background-color: #ffc107; } 
+        .progress-bar.orange { background-color: #ff9800; }
+        .progress-bar.red { background-color: #f44336; } 
 
-        /* Button Styles (from Obj 1) */
         .btn-primary {
             background-color: #0077c2;
             color: white;
@@ -120,8 +135,10 @@
             display: block;
             width: 100%;
             cursor: pointer;
+            transition: background-color 0.2s;
         }
-         .btn-secondary {
+        .btn-primary:hover { background-color: #005a93; }
+        .btn-secondary {
             background-color: #e0f2fe;
             color: #0077c2;
             padding: 10px 16px;
@@ -130,17 +147,35 @@
             font-weight: 500;
             border: 1px solid #0077c2;
             cursor: pointer;
+            transition: background-color 0.2s;
         }
+        .btn-secondary:hover { background-color: #b3e0fb; }
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-danger:hover { background-color: #d32f2f; }
 
-        /* Tab Buttons for Usage page (Obj 2) and Offers/Leaderboard (Obj 6) */
         .tab-buttons {
             display: flex;
             justify-content: space-around;
-            margin-bottom: 16px; /* Add margin for content below */
+            margin-bottom: 16px; 
             border-bottom: 1px solid #e5e7eb;
             background-color: #fff;
+            position: sticky; /* Sticky tabs for usage page */
+            top: 0; /* Stick to top of scrollable main */
+            z-index: 50; /* Below main header */
         }
-        .tab-button { /* General tab button style */
+        .page-content .tab-buttons { /* Specific for tabs inside pages */
+            top: 0; /* Adjust if page has its own sub-header */
+        }
+        .tab-button { 
             padding: 12px 16px;
             font-weight: 600;
             color: #6b7280;
@@ -148,29 +183,29 @@
             border-bottom: 3px solid transparent;
             flex-grow: 1;
             text-align: center;
+            transition: color 0.2s, border-bottom-color 0.2s;
         }
         .tab-button.active {
             color: #0077c2;
             border-bottom-color: #0077c2;
         }
-        .tab-content { display: none; } /* Content for tabs, hidden by default */
+        .tab-content { display: none; } 
         .tab-content.active { display: block; }
 
-
-        /* Chart Container Styles (from Obj 2) */
         .chart-container {
-            height: 200px;
+            height: 220px; /* Increased height */
             background-color: #f9fafb;
             border-radius: 8px;
             padding: 10px;
             display: flex;
             align-items: flex-end;
             justify-content: space-around;
-            position: relative; /* For comparison line */
+            position: relative; 
+            margin-bottom: 25px; /* Space for labels */
         }
         .chart-bar {
             background-color: #3b82f6;
-            width: 10%; /* Adjust based on number of bars */
+            width: 10%; 
             border-radius: 4px 4px 0 0;
             position: relative;
             display: flex;
@@ -180,8 +215,8 @@
         }
         .chart-bar-label {
             position: absolute;
-            bottom: -20px;
-            font-size: 0.7rem;
+            bottom: -22px; /* Adjusted for spacing */
+            font-size: 0.65rem; /* Smaller label */
             color: #6b7280;
             text-align: center;
             width: 100%;
@@ -189,12 +224,15 @@
         .chart-bar-value {
             position: absolute;
             top: -20px;
-            font-size: 0.7rem;
+            font-size: 0.65rem; /* Smaller value */
             color: #374151;
             font-weight: 500;
             text-align: center;
             width: 100%;
+            opacity: 0; /* Hidden by default, shown on hover/interaction */
+            transition: opacity 0.3s;
         }
+        .chart-bar:hover .chart-bar-value { opacity: 1; }
         .comparison-line {
             border-top: 2px dashed #fbbf24;
             width: 100%;
@@ -206,12 +244,11 @@
             color: #d97706;
             position: absolute;
             right: 5px;
-            background-color: rgba(255,255,255,0.7);
-            padding: 0 3px;
+            background-color: rgba(255,255,255,0.8);
+            padding: 1px 4px;
             border-radius: 3px;
         }
 
-        /* Rewards Page Styles (Obj 3) */
         .highlight-banner {
             background: linear-gradient(to right, #0077c2, #0095db);
             color: white;
@@ -225,7 +262,6 @@
         .highlight-banner p { font-size: 1rem; }
         .progress-ring {
             position: relative; width: 120px; height: 120px; border-radius: 50%;
-            /* Example: 70% progress */
             background: conic-gradient(#4caf50 70%, #e0e0e0 0% 30%); 
             margin: 10px auto; display: flex; align-items: center; justify-content: center;
         }
@@ -236,9 +272,8 @@
         .progress-ring-text { position: relative; z-index: 1; font-size: 1.5rem; font-weight: 700; color: #4caf50; }
         .progress-ring-subtext { font-size: 0.7rem; color: #6b7280; margin-top: -5px; }
 
-        /* Visitor Alerts Page Styles (Obj 5) */
-        .toggle-switch-label { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
-        .toggle-switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .toggle-switch-label { display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 8px 0; }
+        .toggle-switch { position: relative; display: inline-block; width: 50px; height: 28px; flex-shrink: 0; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 28px; }
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
@@ -252,36 +287,30 @@
         .notification-title { font-weight: 600; color: #1f2937; font-size: 0.9rem; }
         .notification-body { font-size: 0.85rem; color: #374151; }
 
-        /* Offers & Leaderboard Page Styles (Obj 6 - from provided artifact) */
         .offer-card { display: flex; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; }
         .offer-card:last-child { border-bottom: none; margin-bottom: 0; }
-        .offer-icon { width: 50px; height: 50px; background-color: #e0f2fe; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 12px; color: #0077c2; font-size: 1.5rem; }
-        .offer-details h4 { font-weight: 600; color: #1f2937; }
+        .offer-icon { width: 50px; height: 50px; background-color: #e0f2fe; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 12px; color: #0077c2; font-size: 1.5rem; flex-shrink: 0; }
+        .offer-details { flex-grow: 1; }
+        .offer-details h4 { font-weight: 600; color: #1f2937; margin-bottom: 2px; }
         .offer-details p { font-size: 0.875rem; color: #4b5563; }
         .offer-details .discount { font-weight: 700; color: #16a34a; }
-        .btn-view-offer { background-color: #0077c2; color: white; font-size: 0.8rem; padding: 6px 10px; border-radius: 6px; margin-left: auto; cursor: pointer;}
+        .btn-view-offer { background-color: #0077c2; color: white; font-size: 0.8rem; padding: 6px 10px; border-radius: 6px; margin-left: auto; cursor: pointer; white-space: nowrap;}
         .leaderboard-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
         .leaderboard-item:last-child { border-bottom: none; }
         .rank { font-weight: 600; color: #0077c2; width: 30px; }
         .avatar { width: 36px; height: 36px; border-radius: 50%; background-color: #d1d5db; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 0.8rem; font-weight: bold; color: #4b5563; }
         .name { flex-grow: 1; font-weight: 500; color: #374151; }
         .points { font-weight: 600; color: #10b981; }
-        .highlight-user { background-color: #eff6ff; border-left: 3px solid #0077c2; padding-left: 10px; margin-left: -13px; /* Adjust to align with other items */ }
+        .highlight-user { background-color: #eff6ff; border-left: 3px solid #0077c2; padding-left: 10px; margin-left: -13px; }
         .seasonal-banner { background: linear-gradient(to right, #fbbf24, #f59e0b); color: white; padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 16px; }
         .seasonal-banner p { font-size: 0.9rem; font-weight: 500; }
 
-        /* Weather card specific styles (Obj 4 integration) */
         .weather-card {
-            background: linear-gradient(135deg, #6DD5FA, #2980B9); /* Blue gradient */
+            background: linear-gradient(135deg, #6DD5FA, #2980B9); 
             color: white;
         }
-        .weather-card .temp {
-            font-size: 2.5rem;
-            font-weight: bold;
-        }
-        .weather-card .condition {
-            font-size: 1.1rem;
-        }
+        .weather-card .temp { font-size: 2.5rem; font-weight: bold; }
+        .weather-card .condition { font-size: 1.1rem; }
         .weather-card .quick-stat {
             font-size: 0.9rem;
             background-color: rgba(255,255,255,0.2);
@@ -289,38 +318,130 @@
             border-radius: 6px;
             margin-top: 5px;
         }
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.6);
+            display: none; /* Hidden by default */
+            align-items: center;
+            justify-content: center;
+            z-index: 1000; /* Above everything */
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 380px; /* Max width for modal */
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            color: #9ca3af;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        .modal-close-btn:hover { color: #6b7280; }
+        .modal-title { font-size: 1.3rem; font-weight: 600; color: #1f2937; margin-bottom: 15px; }
+        .modal-body p { font-size: 0.95rem; color: #4b5563; margin-bottom: 10px; line-height: 1.6; }
+        .modal-body .form-label { font-size: 0.9rem; font-weight: 500; color: #374151; margin-bottom: 5px; display: block; }
+        .modal-body input[type="text"], .modal-body input[type="number"], .modal-body textarea, .modal-body select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+        .modal-body textarea { min-height: 80px; }
+        .achievement-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            background-color: #f0f9ff;
+            border-radius: 8px;
+            border: 1px solid #bce0fd;
+            text-align: center;
+        }
+        .achievement-badge i { font-size: 2.5rem; color: #0077c2; margin-bottom: 5px; }
+        .achievement-badge.earned i { color: #fbbf24; } /* Gold for earned */
+        .achievement-badge p { font-size: 0.75rem; color: #0369a1; font-weight: 500; margin: 0; }
+        .achievement-badge .date { font-size: 0.65rem; color: #6b7280; }
 
+        /* Input field styling */
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; font-weight: 500; color: #374151; margin-bottom: 0.3rem; font-size: 0.9rem; }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #0077c2;
+            box-shadow: 0 0 0 2px rgba(0, 119, 194, 0.2);
+        }
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            min-height: 100px;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
     <div class="app-container">
         <header class="app-header">
-            <h1 id="appTitle">H2O WA</h1>
+            <button class="back-button" style="display: none;" onclick="goBack()"><i class="fas fa-arrow-left"></i></button>
+            <h1 id="appTitle">AquaSave WA</h1>
+            <i class="fas fa-bell header-icon-right" onclick="openNotificationModal()"></i>
         </header>
 
         <main>
             <div id="page-home" class="page-content active">
                 <div class="p-4">
-                    <h2 class="text-xl font-semibold text-gray-700 mb-1">Good Morning, Sarah!</h2>
-                    <p class="text-sm text-gray-500">Here's your water & weather update.</p>
+                    <h2 class="text-xl font-semibold text-gray-700 mb-1">Good Morning, <span id="userName">Sarah</span>!</h2>
+                    <p class="text-sm text-gray-500">Here's your water & weather update. <span class="text-xs block">Last synced: <span id="lastSyncedTime">Just now</span></span></p>
                 </div>
 
                 <div class="card weather-card">
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-lg">Perth, WA</p>
-                            <p class="temp">22°C <i class="fas fa-sun"></i></p>
-                            <p class="condition">Sunny, clear skies</p>
+                            <p class="text-lg" id="weatherLocation">Perth, WA</p>
+                            <p class="temp"><span id="weatherTemp">22</span>°C <i id="weatherIcon" class="fas fa-sun"></i></p>
+                            <p class="condition" id="weatherCondition">Sunny, clear skies</p>
                         </div>
                         <i class="fas fa-cloud-sun text-5xl opacity-70"></i>
                     </div>
-                    <div class="mt-4 grid grid-cols-2 gap-2">
-                        <div class="quick-stat text-center"><i class="fas fa-tint mr-1"></i>Saved: 70L this week</div>
-                        <div class="quick-stat text-center"><i class="fas fa-coins mr-1"></i>Saved: $8.20 this month</div>
+                    <div class="mt-3 grid grid-cols-3 gap-2 text-xs">
+                        <div class="text-center"><strong>Humidity:</strong> <span id="weatherHumidity">55</span>%</div>
+                        <div class="text-center"><strong>Wind:</strong> <span id="weatherWind">10</span>km/h</div>
+                        <div class="text-center"><strong>Rain Chance:</strong> <span id="weatherRainChance">5</span>%</div>
                     </div>
-                     <p class="text-xs opacity-80 mt-3 text-center">Rain expected tomorrow afternoon.</p>
+                    <p class="text-xs opacity-80 mt-3 text-center" id="weatherForecast">Rain expected tomorrow afternoon. Watering today might be unnecessary if rain is significant.</p>
                 </div>
-
 
                 <div class="card">
                     <div class="flex justify-between items-center mb-3">
@@ -328,24 +449,30 @@
                         <i class="fas fa-tint text-2xl text-blue-500"></i>
                     </div>
                     <div class="text-center mb-3">
-                        <span class="text-4xl font-bold text-blue-600">120 L</span>
-                        <span class="text-gray-600">/ 150 L Target</span>
+                        <span class="text-4xl font-bold text-blue-600" id="todayWaterUse">120 L</span>
+                        <span class="text-gray-600">/ <span id="todayWaterTarget">150</span> L Target</span>
                     </div>
                     <div class="progress-bar-bg mb-2">
-                        <div class="progress-bar" style="width: 80%;"></div> </div>
-                    <p class="text-xs text-gray-500 text-center">You're doing great! Keep it up.</p>
+                        <div id="todayUsageProgressBar" class="progress-bar" style="width: 80%;"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 text-center" id="todayUsageMessage">You're doing great! Keep it up.</p>
                 </div>
-
+                
                 <div class="card bg-sky-50">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="text-lg font-semibold text-sky-700">Today's Tip & Challenge!</h3>
                         <i class="fas fa-lightbulb text-2xl text-yellow-400"></i>
                     </div>
-                    <p class="text-gray-700 mb-3">
+                    <p class="text-gray-700 mb-3" id="dailyTipText">
                         <strong>Fix That Drip!</strong> Check all your taps for leaks. A small drip can waste over 20 litres a day!
                     </p>
-                    <p class="text-sm text-gray-600 mb-3">Complete this and earn <strong class="text-green-600">50 AquaPoints!</strong></p>
-                    <button class="btn-secondary w-full text-sm py-2">Learn How & Mark as Done</button>
+                    <p class="text-sm text-gray-600 mb-3">Complete this and earn <strong class="text-green-600"><span id="dailyChallengePoints">50</span> AquaPoints!</strong></p>
+                    <button class="btn-secondary w-full text-sm py-2" onclick="openTipChallengeModal()">Learn How & Mark as Done</button>
+                </div>
+
+                <div class="px-4 py-2 my-2 grid grid-cols-2 gap-3 sm:grid-cols-2">
+                    <button class="btn-primary text-sm py-3" onclick="openReportLeakModal()"><i class="fas fa-faucet-drip mr-2"></i>Report Leak</button>
+                    <button class="btn-secondary text-sm py-3" onclick="navigateTo('page-usage', 'Your Water Usage', document.querySelector('.nav-item[onclick*=\'page-usage\']'))"><i class="fas fa-chart-line mr-2"></i>View Usage</button>
                 </div>
 
                 <div class="px-4 py-2 my-4">
@@ -354,7 +481,7 @@
                             <div class="py-1"><i class="fas fa-info-circle fa-lg mr-3"></i></div>
                             <div>
                                 <p class="font-bold">Did you know?</p>
-                                <p class="text-sm">Watering your garden before 9 AM or after 6 PM reduces evaporation!</p>
+                                <p class="text-sm" id="didYouKnowText">Watering your garden before 9 AM or after 6 PM reduces evaporation!</p>
                             </div>
                         </div>
                     </div>
@@ -362,30 +489,27 @@
             </div>
 
             <div id="page-usage" class="page-content">
-                <div class="tab-buttons mt-0"> <button class="tab-button usage-tab active" onclick="showUsageTab('usage-daily', this)">Daily</button>
+                <div class="tab-buttons"> <button class="tab-button usage-tab active" onclick="showUsageTab('usage-daily', this)">Daily</button>
                     <button class="tab-button usage-tab" onclick="showUsageTab('usage-weekly', this)">Weekly</button>
                     <button class="tab-button usage-tab" onclick="showUsageTab('usage-monthly', this)">Monthly</button>
+                    <button class="tab-button usage-tab" onclick="showUsageTab('usage-breakdown', this)">Breakdown</button>
                 </div>
 
                 <div id="usage-daily" class="tab-content active">
                     <div class="card">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-3">Today: May 7, 2025</h3>
-                        <div class="chart-container relative">
-                            <div class="chart-bar" style="height: 30%;"><span class="chart-bar-value">10L</span><span class="chart-bar-label">7am</span></div>
-                            <div class="chart-bar" style="height: 20%;"><span class="chart-bar-value">5L</span><span class="chart-bar-label">8am</span></div>
-                            <div class="chart-bar" style="height: 60%;"><span class="chart-bar-value">25L</span><span class="chart-bar-label">6pm</span></div>
-                            <div class="chart-bar" style="height: 40%;"><span class="chart-bar-value">18L</span><span class="chart-bar-label">7pm</span></div>
-                            <div class="comparison-line" style="bottom: 50%;"><span class="comparison-label" style="top: -18px;">Yesterday's Peak (20L)</span></div>
-                        </div>
-                        <p class="text-sm text-gray-600 mt-6">Total Today: <strong class="text-blue-600">58 L</strong></p>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">Today: <span id="usageDailyDate">May 7, 2025</span></h3>
+                        <div class="chart-container relative" id="dailyChartContainer">
+                            </div>
+                        <p class="text-sm text-gray-600 mt-2 text-center">Total Today: <strong class="text-blue-600" id="dailyTotalUsage">58 L</strong></p>
+                        <p class="text-xs text-gray-500 text-center">Comparison: Yesterday <strong id="dailyComparisonUsage">75 L</strong></p>
                     </div>
-                    <div class="card bg-yellow-50 border border-yellow-300">
+                    <div class="card bg-yellow-50 border border-yellow-300" id="leakAlertCard" style="display: none;">
                         <div class="flex items-center">
                             <i class="fas fa-exclamation-triangle text-yellow-500 text-2xl mr-3"></i>
                             <div>
                                 <h4 class="font-semibold text-yellow-700">Potential Leak Detected!</h4>
-                                <p class="text-sm text-yellow-600">Unusual flow detected 2 AM - 4 AM.</p>
-                                <button class="text-xs text-yellow-700 font-semibold underline mt-1">Learn more</button>
+                                <p class="text-sm text-yellow-600">Unusual continuous flow detected <span id="leakTime">2 AM - 4 AM</span>.</p>
+                                <button class="text-xs text-yellow-700 font-semibold underline mt-1" onclick="openLeakInfoModal()">Learn more & Check</button>
                             </div>
                         </div>
                     </div>
@@ -393,31 +517,34 @@
 
                 <div id="usage-weekly" class="tab-content">
                     <div class="card">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-3">This Week (May 5 - May 11)</h3>
-                        <div class="chart-container relative">
-                            <div class="chart-bar" style="height: 70%;"><span class="chart-bar-value">140L</span><span class="chart-bar-label">Mon</span></div>
-                            <div class="chart-bar" style="height: 65%;"><span class="chart-bar-value">130L</span><span class="chart-bar-label">Tue</span></div>
-                            <div class="chart-bar" style="height: 58%;"><span class="chart-bar-value">110L</span><span class="chart-bar-label">Wed</span></div>
-                            <div class="chart-bar" style="height: 75%;"><span class="chart-bar-value">150L</span><span class="chart-bar-label">Thu</span></div>
-                            <div class="chart-bar" style="height: 60%;"><span class="chart-bar-value">120L</span><span class="chart-bar-label">Fri</span></div>
-                            <div class="comparison-line" style="bottom: 68%;"><span class="comparison-label" style="top: -18px;">Last Week Avg. (135L)</span></div>
-                        </div>
-                        <p class="text-sm text-gray-600 mt-6">Avg Daily This Week: <strong class="text-blue-600">130 L</strong> (so far)</p>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">This Week (<span id="usageWeeklyDateRange">May 5 - May 11</span>)</h3>
+                        <div class="chart-container relative" id="weeklyChartContainer">
+                            </div>
+                        <p class="text-sm text-gray-600 mt-2 text-center">Avg Daily This Week: <strong class="text-blue-600" id="weeklyAvgUsage">130 L</strong></p>
+                        <p class="text-xs text-gray-500 text-center">Comparison: Last Week Avg. <strong id="weeklyComparisonUsage">135 L</strong></p>
                     </div>
                 </div>
 
                 <div id="usage-monthly" class="tab-content">
-                     <div class="card">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-3">This Month (May 2025)</h3>
-                         <div class="chart-container relative">
-                            <div class="chart-bar" style="height: 70%;"><span class="chart-bar-value">980L</span><span class="chart-bar-label">Wk 1</span></div>
-                            <div class="chart-bar" style="height: 65%;"><span class="chart-bar-value">910L</span><span class="chart-bar-label">Wk 2</span></div>
-                            <div class="chart-bar" style="height: 50%;"><span class="chart-bar-value">700L</span><span class="chart-bar-label">Wk 3*</span></div>
-                            <div class="chart-bar" style="height: 20%;"><span class="chart-bar-value">Proj.</span><span class="chart-bar-label">Wk 4*</span></div>
-                            <div class="comparison-line" style="bottom: 75%;"><span class="comparison-label" style="top: -18px;">Last Month Total (4000L)</span></div>
-                        </div>
-                        <p class="text-sm text-gray-600 mt-6">Total So Far: <strong class="text-blue-600">2590 L</strong> (*projected)</p>
+                    <div class="card">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">This Month (<span id="usageMonthlyDate">May 2025</span>)</h3>
+                        <div class="chart-container relative" id="monthlyChartContainer">
+                           </div>
+                        <p class="text-sm text-gray-600 mt-2 text-center">Total So Far: <strong class="text-blue-600" id="monthlyTotalUsage">2590 L</strong> (*projected for full month: <strong id="monthlyProjectedUsage">3950 L</strong>)</p>
+                        <p class="text-xs text-gray-500 text-center">Comparison: Last Month Total <strong id="monthlyComparisonUsage">4000 L</strong></p>
                     </div>
+                </div>
+                
+                <div id="usage-breakdown" class="tab-content">
+                    <div class="card">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">Usage Breakdown (Today - Est.)</h3>
+                        <div id="breakdownChartContainer" class="space-y-3">
+                            </div>
+                         <p class="text-xs text-gray-500 mt-4 text-center">Estimates based on typical appliance usage patterns.</p>
+                    </div>
+                </div>
+                <div class="p-4">
+                     <button class="btn-secondary w-full text-sm" onclick="alert('Simulating data export...')"><i class="fas fa-download mr-2"></i>Download Usage Report</button>
                 </div>
             </div>
 
@@ -425,68 +552,61 @@
                 <div class="highlight-banner">
                     <i class="fas fa-award fa-3x mb-3"></i>
                     <h2>Save Water, Save Big!</h2>
-                    <p>Participating homes get <strong class="text-yellow-300">25% OFF</strong> their water bill!</p>
+                    <p>Eligible homes can get up to <strong class="text-yellow-300">25% OFF</strong> their water bill!</p>
                 </div>
                 <div class="card text-center">
                     <i class="fas fa-check-circle text-green-500 text-5xl mb-3"></i>
                     <h3 class="text-xl font-semibold text-gray-800 mb-2">You're Participating!</h3>
-                    <p class="text-gray-600 mb-4">Keep saving to secure your discount.</p>
+                    <p class="text-gray-600 mb-1">Keep saving to secure your discount.</p>
+                    <p class="text-xs text-gray-500">Eligibility criteria apply. <a href="#" class="underline">Learn more</a>.</p>
                 </div>
-                 <div class="card text-center">
+                <div class="card text-center">
                     <h3 class="text-lg font-semibold text-gray-800 mb-3">Estimated Bill Savings</h3>
-                    <div class="progress-ring" style="background: conic-gradient(#4caf50 70%, #e0e0e0 0);"> <div class="progress-ring-text">$18.50<div class="progress-ring-subtext">This Cycle</div></div>
+                    <div class="progress-ring" id="billSavingsRing" style="background: conic-gradient(#4caf50 70%, #e0e0e0 0);"> 
+                        <div class="progress-ring-text" id="billSavingsAmount">$18.50<div class="progress-ring-subtext">This Cycle</div></div>
                     </div>
-                    <p class="text-gray-600 mt-3">Estimated 25% saving this billing period based on current usage.</p>
+                    <p class="text-gray-600 mt-3" id="billSavingsText">Estimated 25% saving this billing period based on current usage.</p>
                 </div>
                 <div class="card bg-sky-50 text-center">
-                     <div class="flex items-center justify-center mb-3">
+                    <div class="flex items-center justify-center mb-3">
                         <i class="fas fa-star text-yellow-400 text-3xl mr-2"></i>
-                        <h3 class="text-xl font-semibold text-sky-700">AquaPoints: 750</h3>
+                        <h3 class="text-xl font-semibold text-sky-700">AquaPoints: <span id="userAquaPoints">750</span></h3>
                     </div>
                     <p class="text-gray-600 mb-3">Earn points for challenges & saving!</p>
-                    <button class="text-sm font-medium text-sky-600 hover:text-sky-800 underline">Redeem AquaPoints <i class="fas fa-arrow-right fa-xs ml-1"></i></button>
+                    <button class="text-sm font-medium text-sky-600 hover:text-sky-800 underline" onclick="openRedeemPointsModal()">Redeem AquaPoints <i class="fas fa-arrow-right fa-xs ml-1"></i></button>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 text-center">Your Achievements</h3>
+                    <div class="grid grid-cols-3 gap-3" id="achievementsContainer">
+                        </div>
                 </div>
             </div>
 
             <div id="page-offers-compete" class="page-content">
-                 <div class="tab-buttons mt-0"> <button class="tab-button offers-compete-tab active" onclick="showOffersCompeteTab('offers-devices', this)"><i class="fas fa-tags mr-1"></i> Offers</button>
+                <div class="tab-buttons">
+                    <button class="tab-button offers-compete-tab active" onclick="showOffersCompeteTab('offers-devices', this)"><i class="fas fa-tags mr-1"></i> Offers</button>
                     <button class="tab-button offers-compete-tab" onclick="showOffersCompeteTab('leaderboard', this)"><i class="fas fa-trophy mr-1"></i> Leaderboard</button>
+                    <button class="tab-button offers-compete-tab" onclick="showOffersCompeteTab('challenges', this)"><i class="fas fa-tasks mr-1"></i> Challenges</button>
                 </div>
 
                 <div id="offers-devices" class="tab-content active">
                     <div class="card">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Water-Saving Device Discounts</h3>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">Water-Saving Device Discounts</h3>
+                            <select class="text-xs border border-gray-300 rounded p-1 bg-white" id="offerCategoryFilter" onchange="filterOffers()">
+                                <option value="all">All Categories</option>
+                                <option value="shower">Shower</option>
+                                <option value="tap">Taps</option>
+                                <option value="garden">Garden</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
                         <div class="seasonal-banner">
-                            <p><i class="fas fa-leaf mr-1"></i> Spring Special! 20% OFF Smart Irrigation Controllers!</p>
+                            <p><i class="fas fa-leaf mr-1"></i> Spring Special! <span id="seasonalOfferText">20% OFF Smart Irrigation Controllers!</span></p>
                         </div>
-                        <div class="offer-card">
-                            <div class="offer-icon"><i class="fas fa-shower"></i></div>
-                            <div class="offer-details"><h4>AquaFlow Showerhead</h4><p>Save up to 20L per shower. <span class="discount">15% OFF!</span></p></div>
-                            <button class="btn-view-offer">View</button>
-                        </div>
-                        <div class="offer-card">
-                            <div class="offer-icon"><i class="fas fa-faucet-drip"></i></div>
-                            <div class="offer-details"><h4>Smart Tap Aerators (3-pack)</h4><p>Reduce splash & save water. <span class="discount">10% OFF</span></p></div>
-                            <button class="btn-view-offer">View</button>
-                        </div>
-                         <div class="offer-card">
-                            <div class="offer-icon"><i class="fas fa-seedling"></i></div>
-                            <div class="offer-details"><h4>Drought Tolerant Plant Seeds</h4><p>Beautify your garden, save water. <span class="discount">Buy 1 Get 1 Free</span></p></div>
-                            <button class="btn-view-offer">View</button>
-                        </div>
-                         <p class="text-xs text-gray-500 mt-4 text-center">Discounts via promo code at partner stores. Tap 'View' for details.</p>
-                    </div>
-                    <div class="card bg-blue-50">
-                        <h3 class="text-lg font-semibold text-blue-700 mb-3"><i class="fas fa-bell mr-2"></i>Recent App Notifications</h3>
-                        <p class="text-sm text-blue-600 mb-2">We send tips, challenge remingit push -u origin mainers, and discount alerts.</p>
-                        <div class="flex items-center p-3 bg-white rounded-lg shadow-sm mb-2">
-                            <i class="fas fa-tint text-blue-500 text-xl mr-3"></i>
-                            <div><p class="font-semibold text-sm text-gray-700">Tip: Check garden hose for leaks!</p><p class="text-xs text-gray-500">2 days ago</p></div>
-                        </div>
-                        <div class="flex items-center p-3 bg-white rounded-lg shadow-sm">
-                            <i class="fas fa-tags text-green-500 text-xl mr-3"></i>
-                            <div><p class="font-semibold text-sm text-gray-700">New Offer: 15% off Showerheads</p><p class="text-xs text-gray-500">1 day ago</p></div>
-                        </div>
+                        <div id="offersListContainer">
+                            </div>
+                        <p class="text-xs text-gray-500 mt-4 text-center">Discounts via promo code at partner stores. Tap 'View' for details.</p>
                     </div>
                 </div>
 
@@ -494,18 +614,30 @@
                     <div class="card">
                         <div class="flex justify-between items-center mb-3">
                             <h3 class="text-lg font-semibold text-gray-800">Community Leaderboard</h3>
-                            <select class="text-xs border border-gray-300 rounded p-1 bg-white">
-                                <option>My Postcode (6155)</option>
-                                <option>Western Australia</option>
+                            <select class="text-xs border border-gray-300 rounded p-1 bg-white" id="leaderboardScope" onchange="updateLeaderboardDisplay()">
+                                <option value="postcode">My Postcode (6155)</option>,
+                                <option value="state">Western Australia</option>
+                                <option value="friends">Friends</option>
                             </select>
                         </div>
                         <p class="text-xs text-gray-500 mb-4">Rankings based on AquaPoints. Names are nicknames. Updated daily.</p>
-                        <div class="leaderboard-item"><span class="rank">1.</span><div class="avatar" style="background-color: #ffcc80;">💧</div><span class="name">AquaNinja</span><span class="points">7500 pts</span></div>
-                        <div class="leaderboard-item highlight-user"><span class="rank">2.</span><div class="avatar" style="background-color: #b3e5fc;">😊</div><span class="name">You (Sarah)</span><span class="points">7050 pts</span></div>
-                        <div class="leaderboard-item"><span class="rank">3.</span><div class="avatar" style="background-color: #a5d6a7;">🌸</div><span class="name">DesertFlower</span><span class="points">6900 pts</span></div>
-                        <div class="leaderboard-item"><span class="rank">4.</span><div class="avatar" style="background-color: #c5cae9;">🛠️</div><span class="name">LeakSeeker</span><span class="points">6850 pts</span></div>
-                        <div class="leaderboard-item"><span class="rank">5.</span><div class="avatar" style="background-color: #ffecb3;">☀️</div><span class="name">SunnySaver</span><span class="points">6700 pts</span></div>
-                         <p class="text-xs text-gray-500 mt-4 text-center">Keep saving to climb the ranks! New challenges weekly.</p>
+                        <div id="leaderboardContainer">
+                            </div>
+                        <p class="text-xs text-gray-500 mt-4 text-center">Keep saving to climb the ranks! New challenges weekly.</p>
+                    </div>
+                </div>
+                <div id="challenges" class="tab-content">
+                    <div class="card">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Active Challenges</h3>
+                        <div id="activeChallengesContainer" class="space-y-4">
+                           </div>
+                    </div>
+                     <div class="card bg-gray-50">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">Completed Challenges</h3>
+                        <div id="completedChallengesContainer" class="space-y-3">
+                            <p class="text-sm text-gray-600"><i class="fas fa-check-circle text-green-500 mr-2"></i>7-Day Short Shower Streak (150 points)</p>
+                            <p class="text-sm text-gray-600"><i class="fas fa-check-circle text-green-500 mr-2"></i>Garden Watering Wisdom (100 points)</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -518,37 +650,121 @@
                 <div class="card">
                     <h3 class="text-lg font-semibold text-gray-800 mb-3">Visitor Water Saving Tips</h3>
                     <label for="visitorToggle" class="toggle-switch-label">
-                        <span class="text-gray-700 text-sm flex-1 mr-3">Allow friendly, anonymous saving tips for visitors using H2O WA?</span>
+                        <span class="text-gray-700 text-sm flex-1 mr-3">Allow friendly, anonymous saving tips for visitors using AquaSave WA?</span>
                         <div class="toggle-switch">
-                            <input type="checkbox" id="visitorToggle" checked> <span class="slider"></span>
+                            <input type="checkbox" id="visitorToggle" checked onchange="toggleVisitorTips(this.checked)"> <span class="slider"></span>
                         </div>
                     </label>
-                    <div class="info-box mt-3"> <p><i class="fas fa-info-circle mr-1"></i> If enabled, visitors (with H2O WA) at your home might get a silent, anonymous tip if their water usage habits differ significantly from yours (e.g. shower duration). Your specific data is never shared, only general saving practices.</p>
+                    <div class="info-box mt-3"> <p><i class="fas fa-info-circle mr-1"></i> If enabled, visitors (with AquaSave WA) at your home might get a silent, anonymous tip if their water usage habits differ significantly from yours (e.g. shower duration). Your specific data is never shared, only general saving practices.</p>
                     </div>
                 </div>
                 <div class="card">
                     <h3 class="text-lg font-semibold text-gray-800 mb-2">Example: Visitor Notification</h3>
                     <p class="text-sm text-gray-600 mb-3">If a visitor has higher usage, they might see a notification like this on their own device:</p>
                     <div class="notification-preview">
-                        <div class="notification-header"><img src="https://placehold.co/36x36/0077c2/FFFFFF?text=AS" alt="App Icon"><span>H2O WA • now</span></div>
+                        <div class="notification-header"><img src="https://placehold.co/36x36/0077c2/FFFFFF?text=AS" alt="App Icon" onerror="this.src='https://placehold.co/36x36/cccccc/FFFFFF?text=Error';"><span>AquaSave WA • now</span></div>
                         <p class="notification-title">Friendly Water Tip!</p>
                         <p class="notification-body">Your host is a Top Water Saver! They often use a 4-minute shower timer. Great idea for saving water! 🚿</p>
                     </div>
                 </div>
-                 <div class="card bg-green-50 text-center">
+                <div class="card bg-green-50 text-center">
                     <h3 class="text-lg font-semibold text-green-700 mb-2">Your Household's Water Saver Rating</h3>
-                     <div class="my-2">
+                    <div class="my-2" id="householdRatingStars">
                         <i class="fas fa-star text-yellow-400 text-3xl"></i><i class="fas fa-star text-yellow-400 text-3xl"></i><i class="fas fa-star text-yellow-400 text-3xl"></i><i class="fas fa-star-half-alt text-yellow-400 text-3xl"></i><i class="far fa-star text-yellow-400 text-3xl"></i>
-                     </div>
-                    <p class="text-green-800 font-semibold text-xl my-1">Gold Saver!</p>
-                    <p class="text-sm text-green-600">You're in the top 15% of savers in your area!</p>
+                    </div>
+                    <p class="text-green-800 font-semibold text-xl my-1" id="householdRatingText">Gold Saver!</p>
+                    <p class="text-sm text-green-600" id="householdRatingDescription">You're in the top 15% of savers in your area!</p>
+                </div>
+                 <div class="card">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Local Water News & Events</h3>
+                    <div id="localNewsContainer" class="space-y-3">
+                        <div class="p-3 bg-white rounded-lg shadow-sm border border-gray-200">
+                            <h4 class="font-semibold text-sm text-blue-700">Waterwise Workshop: Native Gardens</h4>
+                            <p class="text-xs text-gray-600">Next Saturday, 10 AM @ Community Hall. Free entry.</p>
+                            <a href="#" class="text-xs text-blue-600 hover:underline">More Info & RSVP</a>
+                        </div>
+                        <div class="p-3 bg-white rounded-lg shadow-sm border border-gray-200">
+                            <h4 class="font-semibold text-sm text-blue-700">Sprinkler Ban Reminder</h4>
+                            <p class="text-xs text-gray-600">Daytime sprinkler restrictions are now in effect for Perth Metro.</p>
+                            <a href="#" class="text-xs text-blue-600 hover:underline">View Schedule</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Report Public Water Wastage</h3>
+                    <p class="text-sm text-gray-600 mb-3">Seen a burst pipe or someone wasting water in public? Let Water Corporation know.</p>
+                    <button class="btn-primary w-full" onclick="openReportPublicLeakModal()"><i class="fas fa-bullhorn mr-2"></i>Report Now</button>
+                </div>
+            </div>
+
+            <div id="page-settings" class="page-content">
+                <div class="p-4">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-3">Settings</h2>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Profile</h3>
+                    <div class="form-group">
+                        <label for="settingName" class="form-label">Name:</label>
+                        <input type="text" id="settingName" class="form-input" value="Sarah M.">
+                    </div>
+                    <div class="form-group">
+                        <label for="settingPostcode" class="form-label">Postcode:</label>
+                        <input type="text" id="settingPostcode" class="form-input" value="6155">
+                    </div>
+                    <div class="form-group">
+                        <label for="settingHousehold" class="form-label">Household Size:</label>
+                        <select id="settingHousehold" class="form-select">
+                            <option value="1">1 person</option>
+                            <option value="2" selected>2 people</option>
+                            <option value="3">3 people</option>
+                            <option value="4">4 people</option>
+                            <option value="5+">5+ people</option>
+                        </select>
+                    </div>
+                     <button class="btn-primary w-full mt-2 text-sm py-2" onclick="saveProfileSettings()">Save Profile</button>
+                </div>
+
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Water Target</h3>
+                     <div class="form-group">
+                        <label for="settingWaterTarget" class="form-label">Daily Target (Litres per person):</label>
+                        <input type="number" id="settingWaterTarget" class="form-input" value="75">
+                    </div>
+                    <button class="btn-primary w-full text-sm py-2" onclick="saveWaterTarget()">Set Target</button>
+                </div>
+
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-1">Notification Preferences</h3>
+                    <ul class="divide-y divide-gray-200">
+                        <li class="py-3"><label class="toggle-switch-label text-sm"><span class="flex-1">Leak Alerts</span> <div class="toggle-switch"><input type="checkbox" checked> <span class="slider round"></span></div></label></li>
+                        <li class="py-3"><label class="toggle-switch-label text-sm"><span class="flex-1">New Offers & Rewards</span> <div class="toggle-switch"><input type="checkbox" checked> <span class="slider round"></span></div></label></li>
+                        <li class="py-3"><label class="toggle-switch-label text-sm"><span class="flex-1">Challenge Reminders</span> <div class="toggle-switch"><input type="checkbox"> <span class="slider round"></span></div></label></li>
+                        <li class="py-3"><label class="toggle-switch-label text-sm"><span class="flex-1">Weekly Summary</span> <div class="toggle-switch"><input type="checkbox" checked> <span class="slider round"></span></div></label></li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Help & Support</h3>
+                    <button class="btn-secondary w-full mb-3 text-sm" onclick="openFaqModal()">FAQ & Troubleshooting</button>
+                    <button class="btn-secondary w-full text-sm" onclick="openContactSupportModal()">Contact Support</button>
+                </div>
+
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">About AquaSave WA</h3>
+                    <p class="text-sm text-gray-600">Version: <span id="appVersion">1.2.0</span></p>
+                    <a href="#" class="text-sm text-blue-600 hover:underline block my-2">Privacy Policy</a>
+                    <a href="#" class="text-sm text-blue-600 hover:underline block">Terms of Service</a>
+                </div>
+
+                <div class="p-4">
+                    <button class="btn-danger w-full" onclick="logoutUser()">Log Out</button>
                 </div>
             </div>
 
         </main>
 
         <nav class="nav-bar">
-            <div class="nav-item active" onclick="navigateTo('page-home', 'H2O WA', this)">
+            <div class="nav-item active" onclick="navigateTo('page-home', 'AquaSave WA', this)">
                 <i class="fas fa-home"></i><span>Home</span>
             </div>
             <div class="nav-item" onclick="navigateTo('page-usage', 'Your Water Usage', this)">
@@ -558,149 +774,1029 @@
                 <i class="fas fa-gift"></i><span>Rewards</span>
             </div>
             <div class="nav-item" onclick="navigateTo('page-offers-compete', 'Offers & Compete', this)">
-                <i class="fas fa-tags"></i><span>Offers</span> </div>
+                <i class="fas fa-tags"></i><span>Offers</span> 
+            </div>
             <div class="nav-item" onclick="navigateTo('page-community', 'Community', this)">
                 <i class="fas fa-users"></i><span>Community</span>
+            </div>
+             <div class="nav-item" onclick="navigateTo('page-settings', 'Settings', this)">
+                <i class="fas fa-cog"></i><span>Settings</span>
             </div>
         </nav>
     </div>
 
+    <div id="modalTipChallenge" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" onclick="closeModal('modalTipChallenge')">&times;</button>
+            <h3 class="modal-title" id="modalTipTitle">Fix That Drip!</h3>
+            <div class="modal-body">
+                <p id="modalTipDescription">A dripping tap can waste a surprising amount of water. Even one drop per second can add up to over 10,000 litres a year!</p>
+                <h4 class="font-semibold mt-3 mb-1">How to Check:</h4>
+                <ul class="list-disc list-inside text-sm text-gray-600 mb-3">
+                    <li>Turn off all water-using appliances.</li>
+                    <li>Check all internal and external taps for drips.</li>
+                    <li>Listen for hissing sounds near toilets or pipes.</li>
+                    <li>Check your water meter. If it's moving when no water is on, you likely have a leak.</li>
+                </ul>
+                <p>Earn <strong class="text-green-600"><span id="modalTipPoints">50</span> AquaPoints</strong> for completing this check!</p>
+                <button class="btn-primary w-full mt-4" onclick="completeChallenge('tipFixDrip', 50)">Mark as Checked & Earn Points</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalLeakInfo" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" onclick="closeModal('modalLeakInfo')">&times;</button>
+            <h3 class="modal-title">Potential Leak Information</h3>
+            <div class="modal-body">
+                <p>Our system detected unusual continuous water flow during off-peak hours, which could indicate a leak.</p>
+                <h4 class="font-semibold mt-3 mb-1">Common Leak Culprits:</h4>
+                <ul class="list-disc list-inside text-sm text-gray-600 mb-3">
+                    <li><strong>Toilets:</strong> Often silent, a running toilet can waste hundreds of litres a day. Listen for hissing or place a few drops of food coloring in the tank (don't flush). If color appears in the bowl after 15 mins, it's leaking.</li>
+                    <li><strong>Taps:</strong> Dripping taps, both indoor and outdoor.</li>
+                    <li><strong>Showerheads:</strong> Leaks at the connection or from the head itself.</li>
+                    <li><strong>Hot Water Systems:</strong> Check the pressure relief valve.</li>
+                    <li><strong>Underground Pipes:</strong> Look for unusually damp or green patches in your garden.</li>
+                </ul>
+                <p>If you suspect a leak, it's best to investigate or call a licensed plumber.</p>
+                <button class="btn-secondary w-full mt-4" onclick="navigateToWaterCorpLeaks()">Water Corp Leak Info</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="modalRedeemPoints" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" onclick="closeModal('modalRedeemPoints')">&times;</button>
+            <h3 class="modal-title">Redeem AquaPoints</h3>
+            <div class="modal-body">
+                <p>You have <strong id="redeemModalUserPoints" class="text-blue-600">750</strong> AquaPoints. Choose a reward:</p>
+                <div class="space-y-3 max-h-60 overflow-y-auto" id="redeemOptionsContainer">
+                    </div>
+                <p class="text-xs text-gray-500 mt-4">Rewards are subject to availability. Terms and conditions apply.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalOfferView" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" onclick="closeModal('modalOfferView')">&times;</button>
+            <h3 class="modal-title" id="modalOfferTitle">Offer Details</h3>
+            <div class="modal-body">
+                <div class="flex items-center mb-3">
+                    <div id="modalOfferIcon" class="offer-icon mr-3"><i class="fas fa-shower"></i></div>
+                    <div>
+                        <h4 class="font-bold text-lg" id="modalOfferName">AquaFlow Showerhead</h4>
+                        <p class="text-green-600 font-semibold" id="modalOfferDiscount">15% OFF!</p>
+                    </div>
+                </div>
+                <p id="modalOfferDescription">This high-efficiency showerhead helps you save up to 20 litres of water per shower without compromising on pressure. Easy to install.</p>
+                <p class="mt-2"><strong>Promo Code:</strong> <code class="bg-gray-200 p-1 rounded text-sm font-mono" id="modalOfferPromoCode">SAVEWATER15</code> <button class="text-xs text-blue-500 ml-1" onclick="copyPromoCode()">Copy</button></p>
+                <p class="text-xs mt-1">Valid until: <span id="modalOfferExpiry">31 Dec 2025</span></p>
+                <button class="btn-primary w-full mt-4" onclick="visitPartnerStore()">Visit Partner Store</button>
+                <p class="text-xs text-gray-500 mt-2 text-center">You will be redirected to our partner's website.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalNotifications" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" onclick="closeModal('modalNotifications')">&times;</button>
+            <h3 class="modal-title">Notifications</h3>
+            <div class="modal-body space-y-3" id="notificationsList">
+                <p class="text-center text-gray-500">No new notifications.</p>
+                </div>
+        </div>
+    </div>
+    
+    <div id="modalFaq" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" onclick="closeModal('modalFaq')">&times;</button>
+            <h3 class="modal-title">FAQ & Troubleshooting</h3>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <h4 class="font-semibold">How is my water usage tracked?</h4>
+                    <p class="text-sm">AquaSave WA syncs with your smart water meter data provided by Water Corporation. If you don't have a smart meter, you can manually input readings (feature coming soon).</p>
+                </div>
+                <div class="mb-3">
+                    <h4 class="font-semibold">My usage data seems incorrect.</h4>
+                    <p class="text-sm">Data can sometimes take up to 24 hours to fully sync. If it persists, please check your Water Corp account or contact support through the app.</p>
+                </div>
+                <div class="mb-3">
+                    <h4 class="font-semibold">How are AquaPoints calculated?</h4>
+                    <p class="text-sm">You earn AquaPoints by completing challenges, consistently staying below your water target, and engaging with educational content.</p>
+                </div>
+                 <div class="mb-3">
+                    <h4 class="font-semibold">What is the Visitor Tip feature?</h4>
+                    <p class="text-sm">If enabled, and a visitor to your home also uses AquaSave WA, they might receive an anonymous, general water-saving tip on their device if their usage (e.g., shower duration) is significantly higher than your household's typical pattern. Your specific data is never shared, only general best practices.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalContactSupport" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" onclick="closeModal('modalContactSupport')">&times;</button>
+            <h3 class="modal-title">Contact Support</h3>
+            <div class="modal-body">
+                <p>If you need help or have an issue to report, please provide details below or contact Water Corporation for billing/meter issues.</p>
+                <div class="form-group">
+                    <label for="supportSubject" class="form-label">Subject:</label>
+                    <input type="text" id="supportSubject" class="form-input" placeholder="e.g., Issue with leaderboard">
+                </div>
+                <div class="form-group">
+                    <label for="supportMessage" class="form-label">Message:</label>
+                    <textarea id="supportMessage" class="form-textarea" placeholder="Describe your issue..."></textarea>
+                </div>
+                <button class="btn-primary w-full mt-2" onclick="sendSupportMessage()">Send Message</button>
+                <p class="text-xs text-gray-500 mt-3">For urgent water supply issues (e.g., no water, major public leak), please call Water Corporation directly at 13 13 75.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="modalReportPublicLeak" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" onclick="closeModal('modalReportPublicLeak')">&times;</button>
+            <h3 class="modal-title">Report Public Water Wastage</h3>
+            <div class="modal-body">
+                <p>Thank you for helping save water! Please provide details of the public water wastage.</p>
+                <div class="form-group">
+                    <label for="publicLeakLocation" class="form-label">Location (Street, Suburb):</label>
+                    <input type="text" id="publicLeakLocation" class="form-input" placeholder="e.g., Corner of Smith St & Jones Rd, Subiaco">
+                </div>
+                <div class="form-group">
+                    <label for="publicLeakDescription" class="form-label">Description:</label>
+                    <textarea id="publicLeakDescription" class="form-textarea" placeholder="e.g., Broken sprinkler on verge, water gushing from manhole..."></textarea>
+                </div>
+                 <div class="form-group">
+                    <label for="publicLeakPhoto" class="form-label">Upload Photo (Optional):</label>
+                    <input type="file" id="publicLeakPhoto" class="form-input">
+                </div>
+                <button class="btn-primary w-full mt-2" onclick="submitPublicLeakReport()">Submit Report</button>
+                <p class="text-xs text-gray-500 mt-3">This will be sent to Water Corporation. For urgent issues, call 13 13 75.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="modalGenericAlert" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" onclick="closeModal('modalGenericAlert')">&times;</button>
+            <h3 class="modal-title" id="genericAlertTitle">Alert</h3>
+            <div class="modal-body">
+                <p id="genericAlertMessage">This is a generic alert message.</p>
+                <button class="btn-primary w-full mt-4" onclick="closeModal('modalGenericAlert')">OK</button>
+            </div>
+        </div>
+    </div>
+
+
     <script>
-        const appTitleElement = document.getElementById('appTitle');
-
-        // Main page navigation
-        function navigateTo(pageId, title, navElement) {
-            // Hide all pages
-            document.querySelectorAll('.page-content').forEach(page => {
-                page.classList.remove('active');
-            });
-            // Show selected page
-            const targetPage = document.getElementById(pageId);
-            if (targetPage) {
-                targetPage.classList.add('active');
+        // --- App State & Data ---
+        let currentUser = {
+            name: "Sarah M.",
+            postcode: "6155",
+            householdSize: 2,
+            dailyTargetPerPerson: 75, // Litres
+            aquaPoints: 780,
+            completedChallenges: ['tipFixDrip_50', 'gardenWateringWisdom_100'], // challengeId_points
+            settings: {
+                notifications: {
+                    leakAlerts: true,
+                    newOffers: true,
+                    challengeReminders: false,
+                    weeklySummary: true
+                }
             }
+        };
+        
+        const dailyTips = [
+            { id: "tipFixDrip", text: "<strong>Fix That Drip!</strong> Check all your taps for leaks. A small drip can waste over 20 litres a day!", points: 50, details: "A dripping tap can waste a surprising amount of water. Even one drop per second can add up to over 10,000 litres a year! Check internal/external taps, listen for hissing near toilets, and check your water meter when no water is on." },
+            { id: "tipShortShower", text: "<strong>5-Minute Shower Challenge!</strong> Try timing your shower today. Aim for 5 minutes or less to save water and energy.", points: 75, details: "The average shower uses 9-12 litres per minute. Cutting your shower time by just 2 minutes can save over 20 litres each time!" },
+            { id: "tipFullLoad", text: "<strong>Full Loads Only!</strong> Wait until you have a full load before running your washing machine or dishwasher.", points: 40, details: "These appliances use a similar amount of water regardless of load size. Maximizing each cycle is a big saver." },
+            { id: "tipWaterPlantsWisely", text: "<strong>Water Plants Wisely!</strong> Water your garden in the early morning or late evening to reduce evaporation. Consider using a watering can for targeted watering.", points: 60, details: "Watering during the heat of the day means much of it evaporates before reaching plant roots. Group plants with similar water needs together."}
+        ];
+
+        const didYouKnowFacts = [
+            "Watering your garden before 9 AM or after 6 PM reduces evaporation!",
+            "A running toilet can waste up to 60,000 litres of water per year.",
+            "Using a broom instead of a hose to clean driveways can save hundreds of litres.",
+            "Installing a water-efficient showerhead can save a family of four over 40,000 litres a year.",
+            "Perth relies on desalination and groundwater more than dams due to changing rainfall patterns."
+        ];
+
+        const achievementsData = [
+            { id: "achieveNoviceSaver", name: "Novice Saver", icon: "fa-seedling", earned: true, date: "Apr 10, 2025", desc: "Started your saving journey!" },
+            { id: "achieveLeakDetective", name: "Leak Detective", icon: "fa-search", earned: true, date: "Apr 20, 2025", desc: "Completed a leak check." },
+            { id: "achieveTargetSmasher", name: "Target Smasher", icon: "fa-bullseye", earned: true, date: "May 1, 2025", desc: "Met daily target 7 days in a row." },
+            { id: "achieveEcoWarrior", name: "Eco Warrior", icon: "fa-shield-alt", earned: false, desc: "Saved 1000L this month." },
+            { id: "achieveAquaHero", name: "Aqua Hero", icon: "fa-trophy", earned: false, desc: "Reached 5000 AquaPoints." },
+            { id: "achieveGardenGuru", name: "Garden Guru", icon: "fa-leaf", earned: true, date: "May 5, 2025", desc: "Completed 3 garden challenges." }
+        ];
+        
+        const offersData = [
+            { id: "offer1", name: "AquaFlow Showerhead", description: "Save up to 20L per shower.", discount: "15% OFF!", icon: "fas fa-shower", category: "shower", promo: "SAVEWATER15", expiry: "31 Dec 2025", partnerLink: "#" },
+            { id: "offer2", name: "Smart Tap Aerators (3-pack)", description: "Reduce splash & save water.", discount: "10% OFF", icon: "fas fa-faucet-drip", category: "tap", promo: "TAPSMART10", expiry: "30 Nov 2025", partnerLink: "#" },
+            { id: "offer3", name: "Drought Tolerant Plant Seeds", description: "Beautify your garden, save water.", discount: "Buy 1 Get 1 Free", icon: "fas fa-seedling", category: "garden", promo: "GARDENBOGO", expiry: "31 Oct 2025", partnerLink: "#" },
+            { id: "offer4", name: "EcoFlush Toilet Converter Kit", description: "Convert to dual flush easily.", discount: "20% OFF", icon: "fas fa-toilet", category: "other", promo: "ECOFLUSH20", expiry: "30 Sep 2025", partnerLink: "#" },
+            { id: "offer5", name: "Rain Barrel (200L)", description: "Collect rainwater for your garden.", discount: "$25 OFF", icon: "fas fa-cloud-rain", category: "garden", promo: "RAINBARREL25", expiry: "31 Aug 2025", partnerLink: "#" }
+        ];
+
+        const redeemOptions = [
+            { id: "redeem1", name: "Watering Can Voucher", points: 500, details: "$5 off any watering can at 'Green Thumb Nursery'." },
+            { id: "redeem2", name: "Native Plant Seed Packet", points: 750, details: "Packet of local native plant seeds." },
+            { id: "redeem3", name: "Water Corp Bill Credit", points: 2000, details: "$10 credit on your next Water Corp bill." },
+            { id: "redeem4", name: "Smart Hose Timer Discount", points: 3000, details: "20% off a smart hose timer from 'AquaTech'." },
+            { id: "redeem5", name: "Donate to WaterAid", points: 1000, details: "$5 donation to WaterAid Australia." }
+        ];
+
+        const leaderboardPostcodeData = [
+            { rank: 1, avatar: '💧', name: "AquaNinja", points: 7500 },
+            { rank: 3, avatar: '🌸', name: "DesertFlower", points: 6900 },
+            { rank: 4, avatar: '🛠️', name: "LeakSeeker", points: 6850 },
+            { rank: 5, avatar: '☀️', name: "SunnySaver", points: 6700 },
+            { rank: 6, avatar: '🌱', name: "EcoSprout", points: 6500 }
+        ];
+        const leaderboardStateData = [
+            { rank: 1, avatar: '👑', name: "StateChamp", points: 9500 },
+            { rank: 20, avatar: '💧', name: "AquaNinja", points: 7500 },
+            { rank: 25, avatar: '😊', name: "You (Sarah)", points: currentUser.aquaPoints },
+            { rank: 50, avatar: '☀️', name: "SunnySaver", points: 6700 }
+        ];
+         const leaderboardFriendsData = [
+            { rank: 1, avatar: '😊', name: "You (Sarah)", points: currentUser.aquaPoints },
+            { rank: 2, avatar: '👩‍💻', name: "TechieTom", points: currentUser.aquaPoints - 150 },
+            { rank: 3, avatar: '🎨', name: "ArtyAnna", points: currentUser.aquaPoints - 300 },
+        ];
+
+        const activeChallengesData = [
+            { id: "challengeShowerTime", title: "Shower Power Saver", description: "Reduce your average shower time by 1 minute for 5 days.", points: 150, progress: 2, goal: 5, unit: "days" },
+            { id: "challengeLeakFreeWeek", title: "Leak-Free Week", description: "Ensure no leaks are detected in your home for 7 consecutive days.", points: 200, progress: 0, goal: 7, unit: "days" },
+            { id: "challengeGardenWatering", title: "Waterwise Garden Challenge", description: "Only water your garden on permitted days this week.", points: 100, progress: 1, goal: 2, unit: "times (max)" }
+        ];
+        
+        let notifications = [
+            { id: 1, type: "tip", title: "New Tip Available!", body: "Check out today's water saving tip: Full Loads Only!", date: new Date(Date.now() - 1 * 60 * 60 * 1000), read: false, icon: "fa-lightbulb", color: "text-yellow-500" },
+            { id: 2, type: "offer", title: "Hot Offer!", body: "15% off AquaFlow Showerheads. View in Offers.", date: new Date(Date.now() - 5 * 60 * 60 * 1000), read: false, icon: "fa-tags", color: "text-green-500" },
+            { id: 3, type: "alert", title: "Usage Alert", body: "Your water usage yesterday was slightly above average. Check Usage page for details.", date: new Date(Date.now() - 24 * 60 * 60 * 1000), read: true, icon: "fa-exclamation-triangle", color: "text-red-500" },
+            { id: 4, type: "reward", title: "Points Earned!", body: "You earned 50 AquaPoints for completing the 'Fix That Drip' challenge!", date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), read: true, icon: "fa-star", color: "text-blue-500" },
+        ];
 
 
-            // Update header title
-            appTitleElement.textContent = title;
+        // --- Navigation & Page Handling ---
+        const pages = document.querySelectorAll('.page-content');
+        const navItems = document.querySelectorAll('.nav-item');
+        const appTitle = document.getElementById('appTitle');
+        const backButton = document.querySelector('.app-header .back-button');
+        let pageHistory = [];
 
-            // Update active nav item
-            document.querySelectorAll('.nav-bar .nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
+        function navigateTo(pageId, title, navElement) {
+            const currentPage = document.querySelector('.page-content.active');
+            if (currentPage && currentPage.id !== pageId) {
+                pageHistory.push({ id: currentPage.id, title: appTitle.textContent, nav: document.querySelector('.nav-item.active') });
+            }
+            
+            pages.forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            
+            appTitle.textContent = title;
+            
+            navItems.forEach(item => item.classList.remove('active'));
             if (navElement) {
                 navElement.classList.add('active');
+            } else { // Handle cases where navElement might not be passed (e.g. direct navigation)
+                const targetNav = Array.from(navItems).find(item => item.getAttribute('onclick').includes(pageId));
+                if (targetNav) targetNav.classList.add('active');
             }
 
-
-            // Scroll to top of new page
-            const mainContentArea = document.querySelector('main');
-            if (mainContentArea) {
-                mainContentArea.scrollTop = 0;
+            if (pageHistory.length > 0 && pageId !== 'page-home') {
+                backButton.style.display = 'block';
+            } else {
+                backButton.style.display = 'none';
             }
+            document.querySelector('main').scrollTop = 0; // Scroll to top of new page
+        }
 
+        function goBack() {
+            if (pageHistory.length > 0) {
+                const previousPage = pageHistory.pop();
+                pages.forEach(page => page.classList.remove('active'));
+                document.getElementById(previousPage.id).classList.add('active');
+                appTitle.textContent = previousPage.title;
 
-            // Special handling for pages with their own tabs to ensure default tab is active
-            if (pageId === 'page-usage') {
-                // Ensure the first tab ('usage-daily') is active by default if navigating to usage page
-                const firstUsageTabButton = document.querySelector('#page-usage .tab-button.usage-tab'); // Targets 'Daily'
-                if (firstUsageTabButton) {
-                     // The onclick attribute for 'Daily' button is "showUsageTab('usage-daily', this)"
-                    showUsageTab('usage-daily', firstUsageTabButton);
+                navItems.forEach(item => item.classList.remove('active'));
+                if (previousPage.nav) {
+                    previousPage.nav.classList.add('active');
                 }
-            } else if (pageId === 'page-offers-compete') {
-                 // Ensure the first tab ('offers-devices') is active
-                const firstOffersTabButton = document.querySelector('#page-offers-compete .tab-button.offers-compete-tab'); // Targets 'Offers'
-                if (firstOffersTabButton) {
-                    // The onclick attribute for 'Offers' button is "showOffersCompeteTab('offers-devices', this)"
-                    showOffersCompeteTab('offers-devices', firstOffersTabButton);
+                 if (pageHistory.length > 0 && previousPage.id !== 'page-home') {
+                    backButton.style.display = 'block';
+                } else {
+                    backButton.style.display = 'none';
                 }
             }
         }
-
+        
         // Tab switching for Usage page
-        function showUsageTab(tabContentId, tabButtonElement) {
-            // Hide all usage tab contents within #page-usage
-            document.querySelectorAll('#page-usage .tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            // Show selected usage tab content
-            const targetTabContent = document.getElementById(tabContentId);
-            if (targetTabContent) {
-                 targetTabContent.classList.add('active');
-            }
-
-            // Deactivate all usage tab buttons within #page-usage
-            document.querySelectorAll('#page-usage .tab-button.usage-tab').forEach(button => {
-                button.classList.remove('active');
-            });
-            // Activate clicked usage tab button
-            if (tabButtonElement) {
-                tabButtonElement.classList.add('active');
-            }
+        function showUsageTab(tabId, buttonElement) {
+            document.querySelectorAll('#page-usage .tab-content').forEach(tc => tc.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('#page-usage .usage-tab').forEach(btn => btn.classList.remove('active'));
+            buttonElement.classList.add('active');
+            if (tabId === 'usage-daily') loadDailyChartData();
+            if (tabId === 'usage-weekly') loadWeeklyChartData();
+            if (tabId === 'usage-monthly') loadMonthlyChartData();
+            if (tabId === 'usage-breakdown') loadBreakdownChartData();
         }
 
         // Tab switching for Offers & Compete page
-        function showOffersCompeteTab(tabContentId, tabButtonElement) {
-            // Hide all offers/compete tab contents within #page-offers-compete
-            document.querySelectorAll('#page-offers-compete .tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            // Show selected tab content
-            const targetTabContent = document.getElementById(tabContentId);
-            if (targetTabContent) {
-                targetTabContent.classList.add('active');
-            }
+        function showOffersCompeteTab(tabId, buttonElement) {
+            document.querySelectorAll('#page-offers-compete .tab-content').forEach(tc => tc.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('#page-offers-compete .offers-compete-tab').forEach(btn => btn.classList.remove('active'));
+            buttonElement.classList.add('active');
+            if (tabId === 'offers-devices') loadOffers();
+            if (tabId === 'leaderboard') updateLeaderboardDisplay();
+            if (tabId === 'challenges') loadActiveChallenges();
+        }
 
+        // --- Modal Handling ---
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
+        }
 
-            // Deactivate all offers/compete tab buttons within #page-offers-compete
-            document.querySelectorAll('#page-offers-compete .tab-button.offers-compete-tab').forEach(button => {
-                button.classList.remove('active');
-            });
-            // Activate clicked tab button
-            if (tabButtonElement) {
-                tabButtonElement.classList.add('active');
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = ''; // Restore scroll
+        }
+        
+        function showGenericAlert(title, message) {
+            document.getElementById('genericAlertTitle').textContent = title;
+            document.getElementById('genericAlertMessage').textContent = message;
+            openModal('modalGenericAlert');
+        }
+
+        // --- Home Page Logic ---
+        function updateHomepageData() {
+            document.getElementById('userName').textContent = currentUser.name.split(' ')[0]; // First name
+            document.getElementById('lastSyncedTime').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Weather (dummy)
+            const weatherIcons = ['fa-sun', 'fa-cloud-sun', 'fa-cloud', 'fa-cloud-showers-heavy'];
+            const weatherConditions = ['Sunny, clear skies', 'Partly cloudy', 'Cloudy with chance of rain', 'Showers expected'];
+            const randIdx = Math.floor(Math.random() * weatherIcons.length);
+            document.getElementById('weatherIcon').className = `fas ${weatherIcons[randIdx]}`;
+            document.getElementById('weatherCondition').textContent = weatherConditions[randIdx];
+            document.getElementById('weatherTemp').textContent = Math.floor(Math.random() * 10 + 18); // 18-27 C
+            document.getElementById('weatherHumidity').textContent = Math.floor(Math.random() * 30 + 50); // 50-80%
+            document.getElementById('weatherWind').textContent = Math.floor(Math.random() * 15 + 5); // 5-20 km/h
+            document.getElementById('weatherRainChance').textContent = Math.floor(Math.random() * 50); // 0-50%
+
+            // Daily Tip
+            const todayTipIndex = new Date().getDate() % dailyTips.length; // Cycle tips daily
+            const currentTip = dailyTips[todayTipIndex];
+            document.getElementById('dailyTipText').innerHTML = currentTip.text;
+            document.getElementById('dailyChallengePoints').textContent = currentTip.points;
+            
+            // Did You Know
+            const todayFactIndex = new Date().getDate() % didYouKnowFacts.length;
+            document.getElementById('didYouKnowText').textContent = didYouKnowFacts[todayFactIndex];
+
+            // Water Usage
+            const waterUsed = Math.floor(Math.random() * (currentUser.dailyTargetPerPerson * currentUser.householdSize * 0.8) + 20); // Use up to 80% of target + 20L base
+            const waterTarget = currentUser.dailyTargetPerPerson * currentUser.householdSize;
+            document.getElementById('todayWaterUse').textContent = `${waterUsed} L`;
+            document.getElementById('todayWaterTarget').textContent = `${waterTarget} L`;
+            const usagePercent = Math.min((waterUsed / waterTarget) * 100, 100);
+            const progressBar = document.getElementById('todayUsageProgressBar');
+            progressBar.style.width = `${usagePercent}%`;
+            
+            progressBar.classList.remove('green', 'yellow', 'orange', 'red');
+            if (usagePercent <= 70) {
+                progressBar.classList.add('green');
+                document.getElementById('todayUsageMessage').textContent = "Excellent! You're well within your target.";
+            } else if (usagePercent <= 90) {
+                progressBar.classList.add('yellow');
+                document.getElementById('todayUsageMessage').textContent = "Good job! Staying on track.";
+            } else if (usagePercent <= 100) {
+                progressBar.classList.add('orange');
+                document.getElementById('todayUsageMessage').textContent = "Nearing your target. Be mindful!";
+            } else {
+                progressBar.style.width = '100%'; // Cap bar at 100% visually
+                progressBar.classList.add('red');
+                document.getElementById('todayUsageMessage').textContent = `Over target by ${waterUsed - waterTarget}L. Try these tips!`;
             }
         }
 
-
-        // Initial setup on DOMContentLoaded
-        document.addEventListener('DOMContentLoaded', () => {
-            // Home page progress bar color logic
-            const progressBar = document.querySelector('#page-home .progress-bar');
-            if (progressBar && progressBar.style.width) {
-                const widthPercentage = parseFloat(progressBar.style.width);
-                progressBar.classList.remove('yellow', 'red'); // Reset classes
-
-                if (widthPercentage < 50) {
-                    progressBar.classList.add('red');
-                } else if (widthPercentage < 80) {
-                    progressBar.classList.add('yellow');
-                }
-                // If >= 80%, it remains the default green (no 'yellow' or 'red' class)
-            }
-
-            // Set the initial active naviggit branch -M maination item and page correctly.
-            // The HTML already marks page-home and its nav item as active.
-            // This call ensures all related logic in navigateTo (like setting title and default tabs for other pages if they were default) runs.
-            const initialPageId = 'page-home';
-            const initialPageTitle = 'H2O WA';
-            // Find the nav item corresponding to the home page to pass to navigateTo
-            const initialNavElement = Array.from(document.querySelectorAll('.nav-bar .nav-item')).find(
-                item => item.getAttribute('onclick')?.includes(`navigateTo('${initialPageId}'`)
-            );
-
-            if (initialNavElement) {
-                 navigateTo(initialPageId, initialPageTitle, initialNavElement);
+        function openTipChallengeModal() {
+            const todayTipIndex = new Date().getDate() % dailyTips.length;
+            const currentTip = dailyTips[todayTipIndex];
+            document.getElementById('modalTipTitle').textContent = currentTip.text.match(/<strong>(.*?)<\/strong>/)[1]; // Extract bolded title
+            document.getElementById('modalTipDescription').innerHTML = currentTip.details; // Use innerHTML for potential formatting
+            document.getElementById('modalTipPoints').textContent = currentTip.points;
+            const completeButton = document.querySelector('#modalTipChallenge .btn-primary');
+            completeButton.onclick = () => completeChallenge(currentTip.id, currentTip.points);
+            
+            if (currentUser.completedChallenges.some(c => c.startsWith(currentTip.id))) {
+                completeButton.textContent = "Challenge Already Completed";
+                completeButton.disabled = true;
+                completeButton.classList.replace('btn-primary', 'btn-secondary');
             } else {
-                console.error("Initial navigation item for home page not found. Ensure it has the correct onclick attribute.");
-                // Fallback: activate the first nav item if specific one not found
-                const firstNavItem = document.querySelector('.nav-bar .nav-item');
-                if (firstNavItem) {
-                    navigateTo(initialPageId, initialPageTitle, firstNavItem);
-                }
+                completeButton.textContent = `Mark as Checked & Earn ${currentTip.points} Points`;
+                completeButton.disabled = false;
+                completeButton.classList.replace('btn-secondary', 'btn-primary');
             }
+            openModal('modalTipChallenge');
+        }
+        
+        function completeChallenge(challengeId, points) {
+            if (!currentUser.completedChallenges.some(c => c.startsWith(challengeId))) {
+                currentUser.aquaPoints += points;
+                currentUser.completedChallenges.push(`${challengeId}_${points}`);
+                updateUserPointsDisplay();
+                showGenericAlert("Challenge Complete!", `You've earned ${points} AquaPoints! Well done.`);
+                closeModal('modalTipChallenge'); // Or whichever modal it was
+                // Potentially update challenge list displays if on that page
+                if (document.getElementById('page-offers-compete').classList.contains('active') && document.getElementById('challenges').classList.contains('active')) {
+                    loadActiveChallenges(); 
+                }
+            } else {
+                showGenericAlert("Already Completed", "You've already completed this challenge.");
+            }
+        }
+
+        function openReportLeakModal() {
+            // For now, just a placeholder. Could open a specific modal or navigate.
+            showGenericAlert("Report a Leak", "Feature to report a household leak coming soon. For urgent public leaks, use Community > Report Public Wastage or call Water Corp.");
+        }
+
+
+        // --- Usage Page Logic ---
+        function generateChartBars(containerId, data, comparisonValue, comparisonLabel, unit = "L") {
+            const container = document.getElementById(containerId);
+            container.innerHTML = ''; // Clear previous bars
+            const maxValue = Math.max(...data.map(d => d.value), comparisonValue || 0) * 1.2; // Add some headroom
+
+            data.forEach(item => {
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar';
+                const percentageHeight = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
+                bar.style.height = `${percentageHeight}%`;
+                if (item.color) bar.style.backgroundColor = item.color;
+
+                const valueSpan = document.createElement('span');
+                valueSpan.className = 'chart-bar-value';
+                valueSpan.textContent = `${item.value}${unit}`;
+                bar.appendChild(valueSpan);
+
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'chart-bar-label';
+                labelSpan.textContent = item.label;
+                bar.appendChild(labelSpan);
+                
+                container.appendChild(bar);
+            });
+
+            if (comparisonValue !== undefined && comparisonLabel) {
+                const line = document.createElement('div');
+                line.className = 'comparison-line';
+                const percentageBottom = maxValue > 0 ? (comparisonValue / maxValue) * 100 : 0;
+                line.style.bottom = `${percentageBottom}%`;
+                
+                const label = document.createElement('span');
+                label.className = 'comparison-label';
+                label.textContent = `${comparisonLabel} (${comparisonValue}${unit})`;
+                label.style.top = "-18px"; // Position above the line
+                line.appendChild(label);
+                container.appendChild(line);
+            }
+        }
+
+        function loadDailyChartData() {
+            document.getElementById('usageDailyDate').textContent = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+            const dailyData = [
+                { label: "6am", value: 5 }, { label: "7am", value: 15 }, { label: "8am", value: 10 },
+                { label: "5pm", value: 8 }, { label: "6pm", value: 25 }, { label: "7pm", value: 12 }, { label: "8pm", value: 5 }
+            ];
+            const totalToday = dailyData.reduce((sum, item) => sum + item.value, 0);
+            document.getElementById('dailyTotalUsage').textContent = `${totalToday} L`;
+            document.getElementById('dailyComparisonUsage').textContent = `75 L`; // Dummy yesterday
+            generateChartBars('dailyChartContainer', dailyData, 20, "Yesterday's Peak"); // Dummy comparison
+            
+            // Simulate leak alert
+            const leakAlertCard = document.getElementById('leakAlertCard');
+            if (Math.random() < 0.3) { // 30% chance of leak alert
+                leakAlertCard.style.display = 'flex';
+                document.getElementById('leakTime').textContent = `${Math.floor(Math.random()*3)+1} AM - ${Math.floor(Math.random()*2)+3} AM`;
+            } else {
+                leakAlertCard.style.display = 'none';
+            }
+        }
+
+        function loadWeeklyChartData() {
+            document.getElementById('usageWeeklyDateRange').textContent = "May 5 - May 11"; // Dummy
+            const weeklyData = [
+                { label: "Mon", value: 140 }, { label: "Tue", value: 130 }, { label: "Wed", value: 110 },
+                { label: "Thu", value: 150 }, { label: "Fri", value: 120 }, { label: "Sat", value: 160 }, { label: "Sun", value: 135 }
+            ];
+            const avgThisWeek = Math.round(weeklyData.reduce((sum, item) => sum + item.value, 0) / weeklyData.length);
+            document.getElementById('weeklyAvgUsage').textContent = `${avgThisWeek} L`;
+            document.getElementById('weeklyComparisonUsage').textContent = `135 L`; // Dummy last week
+            generateChartBars('weeklyChartContainer', weeklyData, 135, "Last Week Avg.");
+        }
+
+        function loadMonthlyChartData() {
+            document.getElementById('usageMonthlyDate').textContent = "May 2025"; // Dummy
+            const monthlyData = [
+                { label: "Wk 1", value: 980 }, { label: "Wk 2", value: 910 }, 
+                { label: "Wk 3", value: 700 }, { label: "Wk 4*", value: 960, color: '#a0c4ff' } // *projected
+            ];
+            const totalSoFar = monthlyData.slice(0,3).reduce((sum, item) => sum + item.value, 0);
+            const projectedTotal = monthlyData.reduce((sum, item) => sum + item.value, 0);
+            document.getElementById('monthlyTotalUsage').textContent = `${totalSoFar} L`;
+            document.getElementById('monthlyProjectedUsage').textContent = `${projectedTotal} L`;
+            document.getElementById('monthlyComparisonUsage').textContent = `4000 L`; // Dummy last month
+            generateChartBars('monthlyChartContainer', monthlyData, 4000, "Last Month Total");
+        }
+        
+        function loadBreakdownChartData() {
+            const container = document.getElementById('breakdownChartContainer');
+            container.innerHTML = ''; // Clear previous
+            const breakdownData = [
+                { appliance: "Showers", usage: 45, color: "#3b82f6" }, // Blue
+                { appliance: "Toilets", usage: 30, color: "#60a5fa" }, // Lighter Blue
+                { appliance: "Taps (Kitchen/Bath)", usage: 25, color: "#93c5fd" }, // Even Lighter Blue
+                { appliance: "Laundry", usage: 20, color: "#bfdbfe" }, // Palest Blue
+                { appliance: "Dishwasher", usage: 15, color: "#10b981" }, // Green
+                { appliance: "Outdoor/Garden", usage: 35, color: "#34d399" } // Lighter Green
+            ];
+            const totalUsage = breakdownData.reduce((sum, item) => sum + item.usage, 0);
+
+            breakdownData.sort((a,b) => b.usage - a.usage).forEach(item => {
+                const percentage = totalUsage > 0 ? (item.usage / totalUsage) * 100 : 0;
+                const itemDiv = document.createElement('div');
+                itemDiv.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm text-gray-700">${item.appliance}</span>
+                        <span class="text-sm font-semibold text-gray-800">${item.usage} L (${percentage.toFixed(0)}%)</span>
+                    </div>
+                    <div class="progress-bar-bg !h-2.5">
+                        <div class="progress-bar !h-2.5" style="width: ${percentage}%; background-color: ${item.color};"></div>
+                    </div>
+                `;
+                container.appendChild(itemDiv);
+            });
+        }
+
+        function openLeakInfoModal() {
+            openModal('modalLeakInfo');
+        }
+        function navigateToWaterCorpLeaks() {
+            closeModal('modalLeakInfo');
+            // In a real app, this would open a web browser to the Water Corp website
+            showGenericAlert("External Link", "This would open the Water Corporation website page on leaks.");
+        }
+
+        // --- Rewards Page Logic ---
+        function updateRewardsPage() {
+            document.getElementById('userAquaPoints').textContent = currentUser.aquaPoints;
+            
+            // Bill Savings Ring (dummy)
+            const savingsPercent = Math.min(Math.floor(Math.random() * 30 + 50), 100); // 50-80% towards max saving
+            const maxDiscount = 25; // 25%
+            const actualDiscount = (savingsPercent / 100) * maxDiscount;
+            const estimatedBill = 80; // Dummy bill amount
+            const savedAmount = (estimatedBill * actualDiscount / 100).toFixed(2);
+
+            document.getElementById('billSavingsRing').style.background = `conic-gradient(#4caf50 ${savingsPercent}%, #e0e0e0 ${savingsPercent}% 100%)`;
+            document.getElementById('billSavingsAmount').innerHTML = `$${savedAmount}<div class="progress-ring-subtext">This Cycle</div>`;
+            document.getElementById('billSavingsText').textContent = `Estimated ${actualDiscount.toFixed(1)}% saving this billing period.`;
+
+            // Achievements
+            const achievementsContainer = document.getElementById('achievementsContainer');
+            achievementsContainer.innerHTML = '';
+            achievementsData.forEach(ach => {
+                const isEarned = currentUser.completedChallenges.some(c => c.startsWith(ach.id)) || ach.earned; // Check against general earned flag too
+                const badgeDiv = document.createElement('div');
+                badgeDiv.className = `achievement-badge ${isEarned ? 'earned' : ''}`;
+                badgeDiv.innerHTML = `
+                    <i class="fas ${ach.icon}"></i>
+                    <p>${ach.name}</p>
+                    ${isEarned && ach.date ? `<span class="date">Earned: ${ach.date}</span>` : ''}
+                    ${!isEarned ? `<span class="date text-gray-400">${ach.desc}</span>` : ''}
+                `;
+                achievementsContainer.appendChild(badgeDiv);
+            });
+        }
+
+        function openRedeemPointsModal() {
+            document.getElementById('redeemModalUserPoints').textContent = currentUser.aquaPoints;
+            const container = document.getElementById('redeemOptionsContainer');
+            container.innerHTML = '';
+            redeemOptions.sort((a,b) => a.points - b.points).forEach(opt => {
+                const canAfford = currentUser.aquaPoints >= opt.points;
+                const optionDiv = document.createElement('div');
+                optionDiv.className = `p-3 border rounded-lg ${canAfford ? 'bg-white hover:bg-gray-50' : 'bg-gray-100 opacity-70'}`;
+                optionDiv.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h5 class="font-semibold text-sm">${opt.name}</h5>
+                            <p class="text-xs text-gray-500">${opt.details}</p>
+                        </div>
+                        <button class="btn-primary text-xs py-1 px-2 ${!canAfford ? '!bg-gray-400 cursor-not-allowed' : ''}" ${!canAfford ? 'disabled' : ''} onclick="redeemReward('${opt.id}', ${opt.points})">
+                            ${opt.points} pts
+                        </button>
+                    </div>
+                `;
+                container.appendChild(optionDiv);
+            });
+            openModal('modalRedeemPoints');
+        }
+
+        function redeemReward(rewardId, pointsCost) {
+            if (currentUser.aquaPoints >= pointsCost) {
+                currentUser.aquaPoints -= pointsCost;
+                updateUserPointsDisplay();
+                document.getElementById('redeemModalUserPoints').textContent = currentUser.aquaPoints; // Update modal points too
+                showGenericAlert("Reward Redeemed!", `You've successfully redeemed for ${pointsCost} points. Details will be emailed.`);
+                // Re-render redeem options in modal to reflect new point balance
+                openRedeemPointsModal(); 
+            } else {
+                showGenericAlert("Not Enough Points", "You don't have enough AquaPoints for this reward.");
+            }
+        }
+        
+        function updateUserPointsDisplay() {
+            const pointsDisplay = document.getElementById('userAquaPoints');
+            if (pointsDisplay) pointsDisplay.textContent = currentUser.aquaPoints;
+            // Update leaderboard if it's visible
+            if (document.getElementById('leaderboard').classList.contains('active')) {
+                updateLeaderboardDisplay();
+            }
+        }
+
+        // --- Offers & Compete Page Logic ---
+        function loadOffers(filterCategory = 'all') {
+            const container = document.getElementById('offersListContainer');
+            container.innerHTML = '';
+            const filteredOffers = filterCategory === 'all' ? offersData : offersData.filter(o => o.category === filterCategory);
+
+            if (filteredOffers.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-500 py-4">No offers currently available in this category.</p>`;
+                return;
+            }
+
+            filteredOffers.forEach(offer => {
+                const card = document.createElement('div');
+                card.className = 'offer-card';
+                card.innerHTML = `
+                    <div class="offer-icon"><i class="${offer.icon}"></i></div>
+                    <div class="offer-details">
+                        <h4>${offer.name}</h4>
+                        <p>${offer.description} <span class="discount">${offer.discount}</span></p>
+                    </div>
+                    <button class="btn-view-offer" onclick="viewOfferDetails('${offer.id}')">View</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+        function filterOffers() {
+            const category = document.getElementById('offerCategoryFilter').value;
+            loadOffers(category);
+        }
+
+        function viewOfferDetails(offerId) {
+            const offer = offersData.find(o => o.id === offerId);
+            if (offer) {
+                document.getElementById('modalOfferTitle').textContent = "Offer Details";
+                document.getElementById('modalOfferIcon').innerHTML = `<i class="${offer.icon}"></i>`;
+                document.getElementById('modalOfferName').textContent = offer.name;
+                document.getElementById('modalOfferDiscount').textContent = offer.discount;
+                document.getElementById('modalOfferDescription').textContent = offer.description + ` Valid with promo code at participating stores.`;
+                document.getElementById('modalOfferPromoCode').textContent = offer.promo;
+                document.getElementById('modalOfferExpiry').textContent = offer.expiry;
+                document.querySelector('#modalOfferView .btn-primary').onclick = () => visitPartnerStore(offer.partnerLink);
+                openModal('modalOfferView');
+            }
+        }
+        function copyPromoCode() {
+            const code = document.getElementById('modalOfferPromoCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showGenericAlert("Copied!", "Promo code copied to clipboard.");
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                showGenericAlert("Error", "Failed to copy promo code.");
+            });
+        }
+        function visitPartnerStore(link = "#") {
+            closeModal('modalOfferView');
+            showGenericAlert("Redirecting...", `This would open the partner store website: ${link}`);
+            // window.open(link, '_blank'); // Actual redirection
+        }
+
+        function updateLeaderboardDisplay() {
+            const scope = document.getElementById('leaderboardScope').value;
+            let dataToDisplay;
+            let highlightUser = true;
+
+            if (scope === 'postcode') {
+                dataToDisplay = [...leaderboardPostcodeData]; // Create a copy
+                 // Check if user is already in postcode data, if not, add them
+                if (!dataToDisplay.find(u => u.name.includes("You"))) {
+                    dataToDisplay.push({ rank: 0, avatar: '😊', name: "You (Sarah)", points: currentUser.aquaPoints });
+                }
+            } else if (scope === 'state') {
+                dataToDisplay = [...leaderboardStateData];
+                 if (!dataToDisplay.find(u => u.name.includes("You"))) {
+                    dataToDisplay.push({ rank: 0, avatar: '😊', name: "You (Sarah)", points: currentUser.aquaPoints });
+                }
+            } else { // friends
+                 dataToDisplay = [...leaderboardFriendsData];
+                 // User is already first in friends data by default in this mock
+            }
+            
+            // Sort by points and assign ranks
+            dataToDisplay.sort((a, b) => b.points - a.points);
+            dataToDisplay.forEach((user, index) => user.rank = index + 1);
+
+
+            const container = document.getElementById('leaderboardContainer');
+            container.innerHTML = '';
+            const displayLimit = 10; // Show top 10 or so
+
+            dataToDisplay.slice(0, displayLimit).forEach(user => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                if (user.name.includes("You (Sarah)") && highlightUser) {
+                    item.classList.add('highlight-user');
+                }
+                item.innerHTML = `
+                    <span class="rank">${user.rank}.</span>
+                    <div class="avatar" style="background-color: ${getAvatarColor(user.name)};">${user.avatar}</div>
+                    <span class="name">${user.name}</span>
+                    <span class="points">${user.points} pts</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+        
+        function getAvatarColor(name) { // Simple consistent color based on name
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const colors = ['#ffcc80', '#b3e5fc', '#a5d6a7', '#c5cae9', '#ffecb3', '#f8bbd0', '#d1c4e9', '#b2dfdb'];
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        function loadActiveChallenges() {
+            const container = document.getElementById('activeChallengesContainer');
+            container.innerHTML = '';
+            if(activeChallengesData.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-500 py-4">No active challenges right now. Check back soon!</p>`;
+                return;
+            }
+            activeChallengesData.forEach(challenge => {
+                const progressPercent = (challenge.progress / challenge.goal) * 100;
+                const isCompleted = currentUser.completedChallenges.some(c => c.startsWith(challenge.id));
+
+                const challengeDiv = document.createElement('div');
+                challengeDiv.className = 'p-4 border rounded-lg shadow-sm bg-white';
+                challengeDiv.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-semibold text-md text-blue-700">${challenge.title}</h4>
+                            <p class="text-xs text-gray-500">${challenge.description}</p>
+                        </div>
+                        <span class="text-sm font-bold text-green-600 whitespace-nowrap ml-2">+${challenge.points} pts</span>
+                    </div>
+                    <div class="mt-2">
+                        <div class="flex justify-between text-xs text-gray-500 mb-1">
+                            <span>Progress: ${challenge.progress} / ${challenge.goal} ${challenge.unit}</span>
+                            <span>${progressPercent.toFixed(0)}%</span>
+                        </div>
+                        <div class="progress-bar-bg !h-2">
+                            <div class="progress-bar !h-2" style="width: ${progressPercent}%;"></div>
+                        </div>
+                    </div>
+                    ${isCompleted ? 
+                        `<button class="btn-secondary w-full mt-3 text-sm py-1.5" disabled><i class="fas fa-check-circle mr-1"></i> Completed</button>` :
+                        (challenge.id === 'challengeLeakFreeWeek' ?  // Example specific button
+                         `<button class="btn-primary w-full mt-3 text-sm py-1.5" onclick="showGenericAlert('Leak Check', 'Remember to perform daily checks for leaks. Good luck!')">View Details</button>` :
+                         `<button class="btn-primary w-full mt-3 text-sm py-1.5" onclick="completeChallenge('${challenge.id}', ${challenge.points})">Mark Progress / Complete</button>`)
+                    }
+                `;
+                container.appendChild(challengeDiv);
+            });
+        }
+
+
+        // --- Community Page Logic ---
+        function toggleVisitorTips(isEnabled) {
+            console.log("Visitor tips " + (isEnabled ? "enabled" : "disabled"));
+            showGenericAlert("Settings Updated", `Visitor tips are now ${isEnabled ? "enabled" : "disabled"}.`);
+        }
+        function updateCommunityPage() {
+            // Household Rating (dummy based on points)
+            const points = currentUser.aquaPoints;
+            let ratingText = "Bronze Saver";
+            let ratingDesc = "Keep up the good work!";
+            let starsHTML = '<i class="fas fa-star text-yellow-400 text-3xl"></i><i class="far fa-star text-yellow-400 text-3xl"></i><i class="far fa-star text-yellow-400 text-3xl"></i><i class="far fa-star text-yellow-400 text-3xl"></i><i class="far fa-star text-yellow-400 text-3xl"></i>';
+
+            if (points > 7000) {
+                ratingText = "Platinum Saver!";
+                ratingDesc = "You're in the top 5% of savers in your area!";
+                starsHTML = '<i class="fas fa-star text-yellow-400 text-3xl"></i><i class="fas fa-star text-yellow-400 text-3xl"></i><i class="fas fa-star text-yellow-400 text-3xl"></i><i class="fas fa-star text-yellow-400 text-3xl"></i><i class="fas fa-star text-yellow-400 text-3xl"></i>';
+            } else if (points > 5000) {
+                ratingText = "Gold Saver!";
+                ratingDesc = "You're in the top 15% of savers in your area!";
+                starsHTML = '<i class="fas fa-star text-yellow-400 text-3xl"></i><i class="fas fa-star text-yellow-400 text-3xl"></i><i class="fas fa-star text-yellow-400 text-3xl"></i><i class="fas fa-star-half-alt text-yellow-400 text-3xl"></i><i class="far fa-star text-yellow-400 text-3xl"></i>';
+            } else if (points > 3000) {
+                ratingText = "Silver Saver!";
+                ratingDesc = "Great effort! You're making a difference.";
+                starsHTML = '<i class="fas fa-star text-yellow-400 text-3xl"></i><i class="fas fa-star text-yellow-400 text-3xl"></i><i class="fas fa-star-half-alt text-yellow-400 text-3xl"></i><i class="far fa-star text-yellow-400 text-3xl"></i><i class="far fa-star text-yellow-400 text-3xl"></i>';
+            }
+            document.getElementById('householdRatingStars').innerHTML = starsHTML;
+            document.getElementById('householdRatingText').textContent = ratingText;
+            document.getElementById('householdRatingDescription').textContent = ratingDesc;
+        }
+        function openReportPublicLeakModal() {
+            openModal('modalReportPublicLeak');
+        }
+        function submitPublicLeakReport() {
+            const location = document.getElementById('publicLeakLocation').value;
+            const description = document.getElementById('publicLeakDescription').value;
+            if (!location || !description) {
+                showGenericAlert("Missing Information", "Please provide both location and description.");
+                return;
+            }
+            // Simulate submission
+            console.log("Public leak report:", { location, description });
+            closeModal('modalReportPublicLeak');
+            showGenericAlert("Report Submitted", "Thank you! Your report has been sent to Water Corporation.");
+            document.getElementById('publicLeakLocation').value = ''; // Clear form
+            document.getElementById('publicLeakDescription').value = '';
+        }
+
+        // --- Settings Page Logic ---
+        function loadSettingsPage() {
+            document.getElementById('settingName').value = currentUser.name;
+            document.getElementById('settingPostcode').value = currentUser.postcode;
+            document.getElementById('settingHousehold').value = currentUser.householdSize;
+            document.getElementById('settingWaterTarget').value = currentUser.dailyTargetPerPerson;
+            document.getElementById('appVersion').textContent = "1.2.1"; // Example version
+
+            // Notification toggles
+            const notifSettings = currentUser.settings.notifications;
+            document.querySelector('#page-settings input[type="checkbox"][checked]').checked = notifSettings.leakAlerts; // This is a bad selector, fix if more toggles
+            // TODO: Properly select and set all notification toggles based on currentUser.settings.notifications
+        }
+        function saveProfileSettings() {
+            currentUser.name = document.getElementById('settingName').value;
+            currentUser.postcode = document.getElementById('settingPostcode').value;
+            currentUser.householdSize = document.getElementById('settingHousehold').value;
+            showGenericAlert("Profile Saved", "Your profile information has been updated.");
+            updateHomepageData(); // Update name on home page if changed
+            updateLeaderboardDisplay(); // Update name on leaderboard
+        }
+        function saveWaterTarget() {
+            const newTarget = parseInt(document.getElementById('settingWaterTarget').value);
+            if (newTarget > 0 && newTarget < 500) { // Basic validation
+                currentUser.dailyTargetPerPerson = newTarget;
+                showGenericAlert("Target Updated", `Your daily water target is now ${newTarget}L per person.`);
+                updateHomepageData(); // Update target on home page
+            } else {
+                showGenericAlert("Invalid Target", "Please enter a reasonable target (e.g., 50-200L).");
+            }
+        }
+        function openFaqModal() { openModal('modalFaq'); }
+        function openContactSupportModal() { openModal('modalContactSupport'); }
+        function sendSupportMessage() {
+            const subject = document.getElementById('supportSubject').value;
+            const message = document.getElementById('supportMessage').value;
+            if (!subject || !message) {
+                showGenericAlert("Missing Information", "Please provide both subject and message.");
+                return;
+            }
+            console.log("Support message:", { subject, message });
+            closeModal('modalContactSupport');
+            showGenericAlert("Message Sent", "Your support request has been sent. We'll get back to you soon.");
+            document.getElementById('supportSubject').value = '';
+            document.getElementById('supportMessage').value = '';
+        }
+        function logoutUser() {
+            // In a real app, this would clear session/tokens and redirect to a login page
+            showGenericAlert("Logged Out", "You have been successfully logged out.");
+            // For this demo, we can just reset some things or navigate to home as if a new user
+            currentUser.name = "Guest";
+            currentUser.aquaPoints = 0;
+            pageHistory = []; // Clear history
+            navigateTo('page-home', 'AquaSave WA', document.querySelector('.nav-item[onclick*="page-home"]'));
+            updateHomepageData();
+            updateRewardsPage(); // Reset rewards display
+        }
+
+        // --- Notifications Modal ---
+        function openNotificationModal() {
+            const container = document.getElementById('notificationsList');
+            container.innerHTML = '';
+            const unreadNotifications = notifications.filter(n => !n.read);
+            
+            if (notifications.length === 0) {
+                 container.innerHTML = `<p class="text-center text-gray-500">No notifications.</p>`;
+            } else {
+                notifications.sort((a,b) => b.date - a.date).forEach(notif => { // Show newest first
+                    const notifDiv = document.createElement('div');
+                    notifDiv.className = `p-3 rounded-lg flex items-start space-x-3 ${notif.read ? 'bg-gray-100' : 'bg-blue-50 border border-blue-200'}`;
+                    notifDiv.innerHTML = `
+                        <i class="fas ${notif.icon} ${notif.color} text-xl mt-1"></i>
+                        <div>
+                            <h5 class="font-semibold text-sm ${notif.read ? 'text-gray-700' : 'text-blue-800'}">${notif.title}</h5>
+                            <p class="text-xs ${notif.read ? 'text-gray-600' : 'text-blue-700'}">${notif.body}</p>
+                            <p class="text-xs ${notif.read ? 'text-gray-400' : 'text-blue-500'}">${timeSince(notif.date)}</p>
+                        </div>
+                        ${!notif.read ? '<span class="w-2 h-2 bg-blue-500 rounded-full ml-auto mt-1 flex-shrink-0"></span>' : ''}
+                    `;
+                    notifDiv.onclick = () => {
+                        notif.read = true;
+                        // Potentially navigate to a relevant page or open details
+                        showGenericAlert(notif.title, notif.body); 
+                        openNotificationModal(); // Re-render to show as read
+                        updateNotificationBadge();
+                    };
+                    container.appendChild(notifDiv);
+                });
+            }
+            openModal('modalNotifications');
+            updateNotificationBadge();
+        }
+        
+        function updateNotificationBadge() {
+            const unreadCount = notifications.filter(n => !n.read).length;
+            const bellIcon = document.querySelector('.app-header .fa-bell');
+            // Remove existing badge if any
+            const existingBadge = bellIcon.querySelector('.notification-badge-count');
+            if (existingBadge) existingBadge.remove();
+
+            if (unreadCount > 0) {
+                bellIcon.classList.add('fa-shake'); // Animate if unread
+                const badge = document.createElement('span');
+                badge.className = 'notification-badge-count absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center';
+                badge.textContent = unreadCount;
+                bellIcon.style.position = 'relative'; // Needed for absolute positioning of badge
+                bellIcon.appendChild(badge);
+
+            } else {
+                bellIcon.classList.remove('fa-shake');
+            }
+        }
+
+        function timeSince(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + " years ago";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + " months ago";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + " days ago";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + " hours ago";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " minutes ago";
+            return Math.floor(seconds) + " seconds ago";
+        }
+
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHomepageData();
+            updateRewardsPage();
+            updateCommunityPage();
+            loadSettingsPage(); // Load settings data into fields
+            
+            // Initial tab loads for pages that might be default
+            if (document.getElementById('page-usage').classList.contains('active')) {
+                showUsageTab('usage-daily', document.querySelector('#page-usage .usage-tab.active'));
+            }
+            if (document.getElementById('page-offers-compete').classList.contains('active')) {
+                showOffersCompeteTab('offers-devices', document.querySelector('#page-offers-compete .offers-compete-tab.active'));
+            }
+            updateNotificationBadge();
+
+            // Close modals on Escape key
+            document.addEventListener('keydown', function (event) {
+                if (event.key === "Escape") {
+                    document.querySelectorAll('.modal-overlay.active').forEach(modal => closeModal(modal.id));
+                }
+            });
+            // Close modals on overlay click
+            document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                overlay.addEventListener('click', function(event) {
+                    if (event.target === overlay) { // Only if click is on overlay itself
+                        closeModal(overlay.id);
+                    }
+                });
+            });
         });
+
     </script>
 </body>
 </html>
