@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaSave WA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff; /* Light blue background for the area outside the app */
+            margin: 0;
+        }
+        .app-container {
+            max-width: 420px; /* Typical mobile width */
+            margin: 0 auto;
+            background-color: #ffffff;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        .app-header { /* Renamed from .header to avoid conflict if any page has its own .header */
+            background-color: #0077c2; /* WA Water Corp Blue */
+            color: white;
+            padding: 16px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .app-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        .app-header .back-button { /* For sub-page headers */
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        main {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-bottom: 70px; /* Space for nav bar */
+        }
+
+        .page-content {
+            display: none; /* Hidden by default, shown by JS */
+        }
+        .page-content.active {
+            display: block;
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-top: 1px solid #e5e7eb;
+            background-color: #f9fafb;
+            position: sticky;
+            bottom: 0;
+            width: 100%;
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #6b7280;
+            font-size: 0.75rem;
+            cursor: pointer;
+            flex: 1; /* Equal width */
+            text-align: center;
+        }
+        .nav-item.active {
+            color: #0077c2;
+        }
+        .nav-item i {
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        /* Progress Bar Styles (from Obj 1) */
+        .progress-bar-bg {
+            background-color: #e0e0e0;
+            border-radius: 8px;
+            height: 20px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background-color: #4caf50; /* Green for good progress - default */
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
+        }
+        .progress-bar.yellow { background-color: #ffeb3b; } /* Yellow for moderate */
+        .progress-bar.red { background-color: #f44336; } /* Red for high usage/warning */
+
+        /* Button Styles (from Obj 1) */
+        .btn-primary {
+            background-color: #0077c2;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            display: block;
+            width: 100%;
+            cursor: pointer;
+        }
+         .btn-secondary {
+            background-color: #e0f2fe;
+            color: #0077c2;
+            padding: 10px 16px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            border: 1px solid #0077c2;
+            cursor: pointer;
+        }
+
+        /* Tab Buttons for Usage page (Obj 2) and Offers/Leaderboard (Obj 6) */
+        .tab-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 16px; /* Add margin for content below */
+            border-bottom: 1px solid #e5e7eb;
+            background-color: #fff;
+        }
+        .tab-button { /* General tab button style */
+            padding: 12px 16px;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            flex-grow: 1;
+            text-align: center;
+        }
+        .tab-button.active {
+            color: #0077c2;
+            border-bottom-color: #0077c2;
+        }
+        .tab-content { display: none; } /* Content for tabs, hidden by default */
+        .tab-content.active { display: block; }
+
+
+        /* Chart Container Styles (from Obj 2) */
+        .chart-container {
+            height: 200px;
+            background-color: #f9fafb;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            position: relative; /* For comparison line */
+        }
+        .chart-bar {
+            background-color: #3b82f6;
+            width: 10%; /* Adjust based on number of bars */
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            transition: height 0.5s ease-in-out;
+        }
+        .chart-bar-label {
+            position: absolute;
+            bottom: -20px;
+            font-size: 0.7rem;
+            color: #6b7280;
+            text-align: center;
+            width: 100%;
+        }
+        .chart-bar-value {
+            position: absolute;
+            top: -20px;
+            font-size: 0.7rem;
+            color: #374151;
+            font-weight: 500;
+            text-align: center;
+            width: 100%;
+        }
+        .comparison-line {
+            border-top: 2px dashed #fbbf24;
+            width: 100%;
+            position: absolute;
+            left: 0;
+        }
+        .comparison-label {
+            font-size: 0.65rem;
+            color: #d97706;
+            position: absolute;
+            right: 5px;
+            background-color: rgba(255,255,255,0.7);
+            padding: 0 3px;
+            border-radius: 3px;
+        }
+
+        /* Rewards Page Styles (Obj 3) */
+        .highlight-banner {
+            background: linear-gradient(to right, #0077c2, #0095db);
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin: 16px;
+            text-align: center;
+            box-shadow: 0 6px 15px rgba(0, 119, 194, 0.3);
+        }
+        .highlight-banner h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; }
+        .highlight-banner p { font-size: 1rem; }
+        .progress-ring {
+            position: relative; width: 120px; height: 120px; border-radius: 50%;
+            /* Example: 70% progress */
+            background: conic-gradient(#4caf50 70%, #e0e0e0 0% 30%); 
+            margin: 10px auto; display: flex; align-items: center; justify-content: center;
+        }
+        .progress-ring::before {
+            content: ''; position: absolute; width: 100px; height: 100px;
+            background: white; border-radius: 50%;
+        }
+        .progress-ring-text { position: relative; z-index: 1; font-size: 1.5rem; font-weight: 700; color: #4caf50; }
+        .progress-ring-subtext { font-size: 0.7rem; color: #6b7280; margin-top: -5px; }
+
+        /* Visitor Alerts Page Styles (Obj 5) */
+        .toggle-switch-label { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+        .toggle-switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 28px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #22c55e; }
+        input:checked + .slider:before { transform: translateX(22px); }
+        .info-box { background-color: #e0f2fe; border-left: 4px solid #0ea5e9; padding: 12px; margin-top: 12px; border-radius: 4px; }
+        .info-box p { font-size: 0.875rem; color: #0369a1; }
+        .notification-preview { background-color: #f3f4f6; border-radius: 8px; padding: 12px; margin-top: 16px; border: 1px solid #e5e7eb; }
+        .notification-header { display: flex; align-items: center; font-size: 0.8rem; color: #6b7280; margin-bottom: 8px; }
+        .notification-header img { width: 18px; height: 18px; margin-right: 6px; border-radius: 3px; }
+        .notification-title { font-weight: 600; color: #1f2937; font-size: 0.9rem; }
+        .notification-body { font-size: 0.85rem; color: #374151; }
+
+        /* Offers & Leaderboard Page Styles (Obj 6 - from provided artifact) */
+        .offer-card { display: flex; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; }
+        .offer-card:last-child { border-bottom: none; margin-bottom: 0; }
+        .offer-icon { width: 50px; height: 50px; background-color: #e0f2fe; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 12px; color: #0077c2; font-size: 1.5rem; }
+        .offer-details h4 { font-weight: 600; color: #1f2937; }
+        .offer-details p { font-size: 0.875rem; color: #4b5563; }
+        .offer-details .discount { font-weight: 700; color: #16a34a; }
+        .btn-view-offer { background-color: #0077c2; color: white; font-size: 0.8rem; padding: 6px 10px; border-radius: 6px; margin-left: auto; cursor: pointer;}
+        .leaderboard-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+        .leaderboard-item:last-child { border-bottom: none; }
+        .rank { font-weight: 600; color: #0077c2; width: 30px; }
+        .avatar { width: 36px; height: 36px; border-radius: 50%; background-color: #d1d5db; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 0.8rem; font-weight: bold; color: #4b5563; }
+        .name { flex-grow: 1; font-weight: 500; color: #374151; }
+        .points { font-weight: 600; color: #10b981; }
+        .highlight-user { background-color: #eff6ff; border-left: 3px solid #0077c2; padding-left: 10px; margin-left: -13px; /* Adjust to align with other items */ }
+        .seasonal-banner { background: linear-gradient(to right, #fbbf24, #f59e0b); color: white; padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 16px; }
+        .seasonal-banner p { font-size: 0.9rem; font-weight: 500; }
+
+        /* Weather card specific styles (Obj 4 integration) */
+        .weather-card {
+            background: linear-gradient(135deg, #6DD5FA, #2980B9); /* Blue gradient */
+            color: white;
+        }
+        .weather-card .temp {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        .weather-card .condition {
+            font-size: 1.1rem;
+        }
+        .weather-card .quick-stat {
+            font-size: 0.9rem;
+            background-color: rgba(255,255,255,0.2);
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-top: 5px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1 id="appTitle">AquaSave WA</h1>
+        </header>
+
+        <main>
+            <div id="page-home" class="page-content active">
+                <div class="p-4">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-1">Good Morning, Sarah!</h2>
+                    <p class="text-sm text-gray-500">Here's your water & weather update.</p>
+                </div>
+
+                <div class="card weather-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-lg">Perth, WA</p>
+                            <p class="temp">22°C <i class="fas fa-sun"></i></p>
+                            <p class="condition">Sunny, clear skies</p>
+                        </div>
+                        <i class="fas fa-cloud-sun text-5xl opacity-70"></i>
+                    </div>
+                    <div class="mt-4 grid grid-cols-2 gap-2">
+                        <div class="quick-stat text-center"><i class="fas fa-tint mr-1"></i>Saved: 70L this week</div>
+                        <div class="quick-stat text-center"><i class="fas fa-coins mr-1"></i>Saved: $8.20 this month</div>
+                    </div>
+                     <p class="text-xs opacity-80 mt-3 text-center">Rain expected tomorrow afternoon.</p>
+                </div>
+
+
+                <div class="card">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-lg font-semibold text-gray-800">Today's Water Use</h3>
+                        <i class="fas fa-tint text-2xl text-blue-500"></i>
+                    </div>
+                    <div class="text-center mb-3">
+                        <span class="text-4xl font-bold text-blue-600">120 L</span>
+                        <span class="text-gray-600">/ 150 L Target</span>
+                    </div>
+                    <div class="progress-bar-bg mb-2">
+                        <div class="progress-bar" style="width: 80%;"></div> </div>
+                    <p class="text-xs text-gray-500 text-center">You're doing great! Keep it up.</p>
+                </div>
+
+                <div class="card bg-sky-50">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-lg font-semibold text-sky-700">Today's Tip & Challenge!</h3>
+                        <i class="fas fa-lightbulb text-2xl text-yellow-400"></i>
+                    </div>
+                    <p class="text-gray-700 mb-3">
+                        <strong>Fix That Drip!</strong> Check all your taps for leaks. A small drip can waste over 20 litres a day!
+                    </p>
+                    <p class="text-sm text-gray-600 mb-3">Complete this and earn <strong class="text-green-600">50 AquaPoints!</strong></p>
+                    <button class="btn-secondary w-full text-sm py-2">Learn How & Mark as Done</button>
+                </div>
+
+                <div class="px-4 py-2 my-4">
+                    <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded-md" role="alert">
+                        <div class="flex">
+                            <div class="py-1"><i class="fas fa-info-circle fa-lg mr-3"></i></div>
+                            <div>
+                                <p class="font-bold">Did you know?</p>
+                                <p class="text-sm">Watering your garden before 9 AM or after 6 PM reduces evaporation!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-usage" class="page-content">
+                <div class="tab-buttons mt-0"> <button class="tab-button usage-tab active" onclick="showUsageTab('usage-daily', this)">Daily</button>
+                    <button class="tab-button usage-tab" onclick="showUsageTab('usage-weekly', this)">Weekly</button>
+                    <button class="tab-button usage-tab" onclick="showUsageTab('usage-monthly', this)">Monthly</button>
+                </div>
+
+                <div id="usage-daily" class="tab-content active">
+                    <div class="card">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">Today: May 7, 2025</h3>
+                        <div class="chart-container relative">
+                            <div class="chart-bar" style="height: 30%;"><span class="chart-bar-value">10L</span><span class="chart-bar-label">7am</span></div>
+                            <div class="chart-bar" style="height: 20%;"><span class="chart-bar-value">5L</span><span class="chart-bar-label">8am</span></div>
+                            <div class="chart-bar" style="height: 60%;"><span class="chart-bar-value">25L</span><span class="chart-bar-label">6pm</span></div>
+                            <div class="chart-bar" style="height: 40%;"><span class="chart-bar-value">18L</span><span class="chart-bar-label">7pm</span></div>
+                            <div class="comparison-line" style="bottom: 50%;"><span class="comparison-label" style="top: -18px;">Yesterday's Peak (20L)</span></div>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-6">Total Today: <strong class="text-blue-600">58 L</strong></p>
+                    </div>
+                    <div class="card bg-yellow-50 border border-yellow-300">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle text-yellow-500 text-2xl mr-3"></i>
+                            <div>
+                                <h4 class="font-semibold text-yellow-700">Potential Leak Detected!</h4>
+                                <p class="text-sm text-yellow-600">Unusual flow detected 2 AM - 4 AM.</p>
+                                <button class="text-xs text-yellow-700 font-semibold underline mt-1">Learn more</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="usage-weekly" class="tab-content">
+                    <div class="card">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">This Week (May 5 - May 11)</h3>
+                        <div class="chart-container relative">
+                            <div class="chart-bar" style="height: 70%;"><span class="chart-bar-value">140L</span><span class="chart-bar-label">Mon</span></div>
+                            <div class="chart-bar" style="height: 65%;"><span class="chart-bar-value">130L</span><span class="chart-bar-label">Tue</span></div>
+                            <div class="chart-bar" style="height: 58%;"><span class="chart-bar-value">110L</span><span class="chart-bar-label">Wed</span></div>
+                            <div class="chart-bar" style="height: 75%;"><span class="chart-bar-value">150L</span><span class="chart-bar-label">Thu</span></div>
+                            <div class="chart-bar" style="height: 60%;"><span class="chart-bar-value">120L</span><span class="chart-bar-label">Fri</span></div>
+                            <div class="comparison-line" style="bottom: 68%;"><span class="comparison-label" style="top: -18px;">Last Week Avg. (135L)</span></div>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-6">Avg Daily This Week: <strong class="text-blue-600">130 L</strong> (so far)</p>
+                    </div>
+                </div>
+
+                <div id="usage-monthly" class="tab-content">
+                     <div class="card">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">This Month (May 2025)</h3>
+                         <div class="chart-container relative">
+                            <div class="chart-bar" style="height: 70%;"><span class="chart-bar-value">980L</span><span class="chart-bar-label">Wk 1</span></div>
+                            <div class="chart-bar" style="height: 65%;"><span class="chart-bar-value">910L</span><span class="chart-bar-label">Wk 2</span></div>
+                            <div class="chart-bar" style="height: 50%;"><span class="chart-bar-value">700L</span><span class="chart-bar-label">Wk 3*</span></div>
+                            <div class="chart-bar" style="height: 20%;"><span class="chart-bar-value">Proj.</span><span class="chart-bar-label">Wk 4*</span></div>
+                            <div class="comparison-line" style="bottom: 75%;"><span class="comparison-label" style="top: -18px;">Last Month Total (4000L)</span></div>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-6">Total So Far: <strong class="text-blue-600">2590 L</strong> (*projected)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-rewards" class="page-content">
+                <div class="highlight-banner">
+                    <i class="fas fa-award fa-3x mb-3"></i>
+                    <h2>Save Water, Save Big!</h2>
+                    <p>Participating homes get <strong class="text-yellow-300">25% OFF</strong> their water bill!</p>
+                </div>
+                <div class="card text-center">
+                    <i class="fas fa-check-circle text-green-500 text-5xl mb-3"></i>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">You're Participating!</h3>
+                    <p class="text-gray-600 mb-4">Keep saving to secure your discount.</p>
+                </div>
+                 <div class="card text-center">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Estimated Bill Savings</h3>
+                    <div class="progress-ring" style="background: conic-gradient(#4caf50 70%, #e0e0e0 0);"> <div class="progress-ring-text">$18.50<div class="progress-ring-subtext">This Cycle</div></div>
+                    </div>
+                    <p class="text-gray-600 mt-3">Estimated 25% saving this billing period based on current usage.</p>
+                </div>
+                <div class="card bg-sky-50 text-center">
+                     <div class="flex items-center justify-center mb-3">
+                        <i class="fas fa-star text-yellow-400 text-3xl mr-2"></i>
+                        <h3 class="text-xl font-semibold text-sky-700">AquaPoints: 750</h3>
+                    </div>
+                    <p class="text-gray-600 mb-3">Earn points for challenges & saving!</p>
+                    <button class="text-sm font-medium text-sky-600 hover:text-sky-800 underline">Redeem AquaPoints <i class="fas fa-arrow-right fa-xs ml-1"></i></button>
+                </div>
+            </div>
+
+            <div id="page-offers-compete" class="page-content">
+                 <div class="tab-buttons mt-0"> <button class="tab-button offers-compete-tab active" onclick="showOffersCompeteTab('offers-devices', this)"><i class="fas fa-tags mr-1"></i> Offers</button>
+                    <button class="tab-button offers-compete-tab" onclick="showOffersCompeteTab('leaderboard', this)"><i class="fas fa-trophy mr-1"></i> Leaderboard</button>
+                </div>
+
+                <div id="offers-devices" class="tab-content active">
+                    <div class="card">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Water-Saving Device Discounts</h3>
+                        <div class="seasonal-banner">
+                            <p><i class="fas fa-leaf mr-1"></i> Spring Special! 20% OFF Smart Irrigation Controllers!</p>
+                        </div>
+                        <div class="offer-card">
+                            <div class="offer-icon"><i class="fas fa-shower"></i></div>
+                            <div class="offer-details"><h4>AquaFlow Showerhead</h4><p>Save up to 20L per shower. <span class="discount">15% OFF!</span></p></div>
+                            <button class="btn-view-offer">View</button>
+                        </div>
+                        <div class="offer-card">
+                            <div class="offer-icon"><i class="fas fa-faucet-drip"></i></div>
+                            <div class="offer-details"><h4>Smart Tap Aerators (3-pack)</h4><p>Reduce splash & save water. <span class="discount">10% OFF</span></p></div>
+                            <button class="btn-view-offer">View</button>
+                        </div>
+                         <div class="offer-card">
+                            <div class="offer-icon"><i class="fas fa-seedling"></i></div>
+                            <div class="offer-details"><h4>Drought Tolerant Plant Seeds</h4><p>Beautify your garden, save water. <span class="discount">Buy 1 Get 1 Free</span></p></div>
+                            <button class="btn-view-offer">View</button>
+                        </div>
+                         <p class="text-xs text-gray-500 mt-4 text-center">Discounts via promo code at partner stores. Tap 'View' for details.</p>
+                    </div>
+                    <div class="card bg-blue-50">
+                        <h3 class="text-lg font-semibold text-blue-700 mb-3"><i class="fas fa-bell mr-2"></i>Recent App Notifications</h3>
+                        <p class="text-sm text-blue-600 mb-2">We send tips, challenge remingit push -u origin mainers, and discount alerts.</p>
+                        <div class="flex items-center p-3 bg-white rounded-lg shadow-sm mb-2">
+                            <i class="fas fa-tint text-blue-500 text-xl mr-3"></i>
+                            <div><p class="font-semibold text-sm text-gray-700">Tip: Check garden hose for leaks!</p><p class="text-xs text-gray-500">2 days ago</p></div>
+                        </div>
+                        <div class="flex items-center p-3 bg-white rounded-lg shadow-sm">
+                            <i class="fas fa-tags text-green-500 text-xl mr-3"></i>
+                            <div><p class="font-semibold text-sm text-gray-700">New Offer: 15% off Showerheads</p><p class="text-xs text-gray-500">1 day ago</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="leaderboard" class="tab-content">
+                    <div class="card">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-lg font-semibold text-gray-800">Community Leaderboard</h3>
+                            <select class="text-xs border border-gray-300 rounded p-1 bg-white">
+                                <option>My Postcode (6155)</option>
+                                <option>Western Australia</option>
+                            </select>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-4">Rankings based on AquaPoints. Names are nicknames. Updated daily.</p>
+                        <div class="leaderboard-item"><span class="rank">1.</span><div class="avatar" style="background-color: #ffcc80;">💧</div><span class="name">AquaNinja</span><span class="points">7500 pts</span></div>
+                        <div class="leaderboard-item highlight-user"><span class="rank">2.</span><div class="avatar" style="background-color: #b3e5fc;">😊</div><span class="name">You (Sarah)</span><span class="points">7050 pts</span></div>
+                        <div class="leaderboard-item"><span class="rank">3.</span><div class="avatar" style="background-color: #a5d6a7;">🌸</div><span class="name">DesertFlower</span><span class="points">6900 pts</span></div>
+                        <div class="leaderboard-item"><span class="rank">4.</span><div class="avatar" style="background-color: #c5cae9;">🛠️</div><span class="name">LeakSeeker</span><span class="points">6850 pts</span></div>
+                        <div class="leaderboard-item"><span class="rank">5.</span><div class="avatar" style="background-color: #ffecb3;">☀️</div><span class="name">SunnySaver</span><span class="points">6700 pts</span></div>
+                         <p class="text-xs text-gray-500 mt-4 text-center">Keep saving to climb the ranks! New challenges weekly.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-community" class="page-content">
+                <div class="p-4">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-1">Share & Learn</h2>
+                    <p class="text-sm text-gray-500">Connect and promote water saving in your community.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Visitor Water Saving Tips</h3>
+                    <label for="visitorToggle" class="toggle-switch-label">
+                        <span class="text-gray-700 text-sm flex-1 mr-3">Allow friendly, anonymous saving tips for visitors using AquaSave WA?</span>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="visitorToggle" checked> <span class="slider"></span>
+                        </div>
+                    </label>
+                    <div class="info-box mt-3"> <p><i class="fas fa-info-circle mr-1"></i> If enabled, visitors (with AquaSave WA) at your home might get a silent, anonymous tip if their water usage habits differ significantly from yours (e.g. shower duration). Your specific data is never shared, only general saving practices.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Example: Visitor Notification</h3>
+                    <p class="text-sm text-gray-600 mb-3">If a visitor has higher usage, they might see a notification like this on their own device:</p>
+                    <div class="notification-preview">
+                        <div class="notification-header"><img src="https://placehold.co/36x36/0077c2/FFFFFF?text=AS" alt="App Icon"><span>AquaSave WA • now</span></div>
+                        <p class="notification-title">Friendly Water Tip!</p>
+                        <p class="notification-body">Your host is a Top Water Saver! They often use a 4-minute shower timer. Great idea for saving water! 🚿</p>
+                    </div>
+                </div>
+                 <div class="card bg-green-50 text-center">
+                    <h3 class="text-lg font-semibold text-green-700 mb-2">Your Household's Water Saver Rating</h3>
+                     <div class="my-2">
+                        <i class="fas fa-star text-yellow-400 text-3xl"></i><i class="fas fa-star text-yellow-400 text-3xl"></i><i class="fas fa-star text-yellow-400 text-3xl"></i><i class="fas fa-star-half-alt text-yellow-400 text-3xl"></i><i class="far fa-star text-yellow-400 text-3xl"></i>
+                     </div>
+                    <p class="text-green-800 font-semibold text-xl my-1">Gold Saver!</p>
+                    <p class="text-sm text-green-600">You're in the top 15% of savers in your area!</p>
+                </div>
+            </div>
+
+        </main>
+
+        <nav class="nav-bar">
+            <div class="nav-item active" onclick="navigateTo('page-home', 'AquaSave WA', this)">
+                <i class="fas fa-home"></i><span>Home</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('page-usage', 'Your Water Usage', this)">
+                <i class="fas fa-chart-bar"></i><span>Usage</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('page-rewards', 'Your Rewards', this)">
+                <i class="fas fa-gift"></i><span>Rewards</span>
+            </div>
+            <div class="nav-item" onclick="navigateTo('page-offers-compete', 'Offers & Compete', this)">
+                <i class="fas fa-tags"></i><span>Offers</span> </div>
+            <div class="nav-item" onclick="navigateTo('page-community', 'Community', this)">
+                <i class="fas fa-users"></i><span>Community</span>
+            </div>
+        </nav>
+    </div>
+
+    <script>
+        const appTitleElement = document.getElementById('appTitle');
+
+        // Main page navigation
+        function navigateTo(pageId, title, navElement) {
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+            });
+            // Show selected page
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+
+
+            // Update header title
+            appTitleElement.textContent = title;
+
+            // Update active nav item
+            document.querySelectorAll('.nav-bar .nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            if (navElement) {
+                navElement.classList.add('active');
+            }
+
+
+            // Scroll to top of new page
+            const mainContentArea = document.querySelector('main');
+            if (mainContentArea) {
+                mainContentArea.scrollTop = 0;
+            }
+
+
+            // Special handling for pages with their own tabs to ensure default tab is active
+            if (pageId === 'page-usage') {
+                // Ensure the first tab ('usage-daily') is active by default if navigating to usage page
+                const firstUsageTabButton = document.querySelector('#page-usage .tab-button.usage-tab'); // Targets 'Daily'
+                if (firstUsageTabButton) {
+                     // The onclick attribute for 'Daily' button is "showUsageTab('usage-daily', this)"
+                    showUsageTab('usage-daily', firstUsageTabButton);
+                }
+            } else if (pageId === 'page-offers-compete') {
+                 // Ensure the first tab ('offers-devices') is active
+                const firstOffersTabButton = document.querySelector('#page-offers-compete .tab-button.offers-compete-tab'); // Targets 'Offers'
+                if (firstOffersTabButton) {
+                    // The onclick attribute for 'Offers' button is "showOffersCompeteTab('offers-devices', this)"
+                    showOffersCompeteTab('offers-devices', firstOffersTabButton);
+                }
+            }
+        }
+
+        // Tab switching for Usage page
+        function showUsageTab(tabContentId, tabButtonElement) {
+            // Hide all usage tab contents within #page-usage
+            document.querySelectorAll('#page-usage .tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            // Show selected usage tab content
+            const targetTabContent = document.getElementById(tabContentId);
+            if (targetTabContent) {
+                 targetTabContent.classList.add('active');
+            }
+
+            // Deactivate all usage tab buttons within #page-usage
+            document.querySelectorAll('#page-usage .tab-button.usage-tab').forEach(button => {
+                button.classList.remove('active');
+            });
+            // Activate clicked usage tab button
+            if (tabButtonElement) {
+                tabButtonElement.classList.add('active');
+            }
+        }
+
+        // Tab switching for Offers & Compete page
+        function showOffersCompeteTab(tabContentId, tabButtonElement) {
+            // Hide all offers/compete tab contents within #page-offers-compete
+            document.querySelectorAll('#page-offers-compete .tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            // Show selected tab content
+            const targetTabContent = document.getElementById(tabContentId);
+            if (targetTabContent) {
+                targetTabContent.classList.add('active');
+            }
+
+
+            // Deactivate all offers/compete tab buttons within #page-offers-compete
+            document.querySelectorAll('#page-offers-compete .tab-button.offers-compete-tab').forEach(button => {
+                button.classList.remove('active');
+            });
+            // Activate clicked tab button
+            if (tabButtonElement) {
+                tabButtonElement.classList.add('active');
+            }
+        }
+
+
+        // Initial setup on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Home page progress bar color logic
+            const progressBar = document.querySelector('#page-home .progress-bar');
+            if (progressBar && progressBar.style.width) {
+                const widthPercentage = parseFloat(progressBar.style.width);
+                progressBar.classList.remove('yellow', 'red'); // Reset classes
+
+                if (widthPercentage < 50) {
+                    progressBar.classList.add('red');
+                } else if (widthPercentage < 80) {
+                    progressBar.classList.add('yellow');
+                }
+                // If >= 80%, it remains the default green (no 'yellow' or 'red' class)
+            }
+
+            // Set the initial active naviggit branch -M maination item and page correctly.
+            // The HTML already marks page-home and its nav item as active.
+            // This call ensures all related logic in navigateTo (like setting title and default tabs for other pages if they were default) runs.
+            const initialPageId = 'page-home';
+            const initialPageTitle = 'AquaSave WA';
+            // Find the nav item corresponding to the home page to pass to navigateTo
+            const initialNavElement = Array.from(document.querySelectorAll('.nav-bar .nav-item')).find(
+                item => item.getAttribute('onclick')?.includes(`navigateTo('${initialPageId}'`)
+            );
+
+            if (initialNavElement) {
+                 navigateTo(initialPageId, initialPageTitle, initialNavElement);
+            } else {
+                console.error("Initial navigation item for home page not found. Ensure it has the correct onclick attribute.");
+                // Fallback: activate the first nav item if specific one not found
+                const firstNavItem = document.querySelector('.nav-bar .nav-item');
+                if (firstNavItem) {
+                    navigateTo(initialPageId, initialPageTitle, firstNavItem);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
