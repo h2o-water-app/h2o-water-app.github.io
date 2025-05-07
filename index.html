@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AquaSave WA</title>
+    <title>H2O WA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -415,7 +415,7 @@
     <div class="app-container">
         <header class="app-header">
             <button class="back-button" style="display: none;" onclick="goBack()"><i class="fas fa-arrow-left"></i></button>
-            <h1 id="appTitle">AquaSave WA</h1>
+            <h1 id="appTitle">H2O WA</h1>
             <i class="fas fa-bell header-icon-right" onclick="openNotificationModal()"></i>
         </header>
 
@@ -650,19 +650,19 @@
                 <div class="card">
                     <h3 class="text-lg font-semibold text-gray-800 mb-3">Visitor Water Saving Tips</h3>
                     <label for="visitorToggle" class="toggle-switch-label">
-                        <span class="text-gray-700 text-sm flex-1 mr-3">Allow friendly, anonymous saving tips for visitors using AquaSave WA?</span>
+                        <span class="text-gray-700 text-sm flex-1 mr-3">Allow friendly, anonymous saving tips for visitors using H2O WA?</span>
                         <div class="toggle-switch">
                             <input type="checkbox" id="visitorToggle" checked onchange="toggleVisitorTips(this.checked)"> <span class="slider"></span>
                         </div>
                     </label>
-                    <div class="info-box mt-3"> <p><i class="fas fa-info-circle mr-1"></i> If enabled, visitors (with AquaSave WA) at your home might get a silent, anonymous tip if their water usage habits differ significantly from yours (e.g. shower duration). Your specific data is never shared, only general saving practices.</p>
+                    <div class="info-box mt-3"> <p><i class="fas fa-info-circle mr-1"></i> If enabled, visitors (with H2O WA) at your home might get a silent, anonymous tip if their water usage habits differ significantly from yours (e.g. shower duration). Your specific data is never shared, only general saving practices.</p>
                     </div>
                 </div>
                 <div class="card">
                     <h3 class="text-lg font-semibold text-gray-800 mb-2">Example: Visitor Notification</h3>
                     <p class="text-sm text-gray-600 mb-3">If a visitor has higher usage, they might see a notification like this on their own device:</p>
                     <div class="notification-preview">
-                        <div class="notification-header"><img src="https://placehold.co/36x36/0077c2/FFFFFF?text=AS" alt="App Icon" onerror="this.src='https://placehold.co/36x36/cccccc/FFFFFF?text=Error';"><span>AquaSave WA • now</span></div>
+                        <div class="notification-header"><img src="https://placehold.co/36x36/0077c2/FFFFFF?text=AS" alt="App Icon" onerror="this.src='https://placehold.co/36x36/cccccc/FFFFFF?text=Error';"><span>H2O WA • now</span></div>
                         <p class="notification-title">Friendly Water Tip!</p>
                         <p class="notification-body">Your host is a Top Water Saver! They often use a 4-minute shower timer. Great idea for saving water! 🚿</p>
                     </div>
@@ -750,7 +750,7 @@
                 </div>
 
                 <div class="card">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-3">About AquaSave WA</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">About H2O WA</h3>
                     <p class="text-sm text-gray-600">Version: <span id="appVersion">1.2.0</span></p>
                     <a href="#" class="text-sm text-blue-600 hover:underline block my-2">Privacy Policy</a>
                     <a href="#" class="text-sm text-blue-600 hover:underline block">Terms of Service</a>
@@ -764,7 +764,7 @@
         </main>
 
         <nav class="nav-bar">
-            <div class="nav-item active" onclick="navigateTo('page-home', 'AquaSave WA', this)">
+            <div class="nav-item active" onclick="navigateTo('page-home', 'H2O WA', this)">
                 <i class="fas fa-home"></i><span>Home</span>
             </div>
             <div class="nav-item" onclick="navigateTo('page-usage', 'Your Water Usage', this)">
@@ -875,7 +875,7 @@
             <div class="modal-body">
                 <div class="mb-3">
                     <h4 class="font-semibold">How is my water usage tracked?</h4>
-                    <p class="text-sm">AquaSave WA syncs with your smart water meter data provided by Water Corporation. If you don't have a smart meter, you can manually input readings (feature coming soon).</p>
+                    <p class="text-sm">H2O WA syncs with your smart water meter data provided by Water Corporation. If you don't have a smart meter, you can manually input readings (feature coming soon).</p>
                 </div>
                 <div class="mb-3">
                     <h4 class="font-semibold">My usage data seems incorrect.</h4>
@@ -887,7 +887,7 @@
                 </div>
                  <div class="mb-3">
                     <h4 class="font-semibold">What is the Visitor Tip feature?</h4>
-                    <p class="text-sm">If enabled, and a visitor to your home also uses AquaSave WA, they might receive an anonymous, general water-saving tip on their device if their usage (e.g., shower duration) is significantly higher than your household's typical pattern. Your specific data is never shared, only general best practices.</p>
+                    <p class="text-sm">If enabled, and a visitor to your home also uses H2O WA, they might receive an anonymous, general water-saving tip on their device if their usage (e.g., shower duration) is significantly higher than your household's typical pattern. Your specific data is never shared, only general best practices.</p>
                 </div>
             </div>
         </div>
@@ -1689,7 +1689,7 @@
             currentUser.name = "Guest";
             currentUser.aquaPoints = 0;
             pageHistory = []; // Clear history
-            navigateTo('page-home', 'AquaSave WA', document.querySelector('.nav-item[onclick*="page-home"]'));
+            navigateTo('page-home', 'H2O WA', document.querySelector('.nav-item[onclick*="page-home"]'));
             updateHomepageData();
             updateRewardsPage(); // Reset rewards display
         }
